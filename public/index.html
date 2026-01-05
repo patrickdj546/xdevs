@@ -167,11 +167,23 @@
 </head>
 <body>
     <div class="container">
-        <h1>🔐 Verifica Codice di Accesso</h1>
+        <h2 style="text-align:center"><u>Riscatta boost</u></h2>
+        <br>
         
         <form id="formCodice">
             <div class="form-group">
-                <label for="codice">Inserisci il tuo codice:</label>
+                <label for="idInvoice">🧾 ID Invoice/Ordine:</label>
+                <input 
+                    type="text" 
+                    id="idInvoice" 
+                    name="idInvoice" 
+                    placeholder="Es: (df3b871ed6f59-000202035639)"
+                    required
+                >
+            </div>
+
+            <div class="form-group">
+                <label for="codice">📝 Inserisci il tuo codice:</label>
                 <input 
                     type="text" 
                     id="codice" 
@@ -196,6 +208,21 @@
                 >
             </div>
 
+            <div class="form-group">
+                <label for="linkDiscord">
+                    <span class="discord-icon">📧</span>
+                    La tua Email:
+                </label>
+                <input 
+                    type="email" 
+                    id="email" 
+                    name="email" 
+                    placeholder="email@esempio.com"
+                    required
+                >
+            </div>            
+
+
             <div class="captcha-container">
                 <div class="simple-captcha">
                     <div class="captcha-question" id="captchaQuestion"></div>
@@ -217,8 +244,10 @@
 
         <div class="info">
             <strong>📋 Istruzioni:</strong><br>
+            • Inserisci l'ID della tua invoice/ordine<br>
             • Formato codice: XXXX-XXXX-XXXX-XXXX<br>
             • Inserisci il link del tuo server Discord<br>
+            • Inserisci la tua email<br>
             • Risolvi il captcha matematico<br>
             • Ogni codice può essere utilizzato una sola volta
         </div>
@@ -226,8 +255,10 @@
 
     <script>
         const form = document.getElementById('formCodice');
+        const inputIdInvoice = document.getElementById('idInvoice');
         const inputCodice = document.getElementById('codice');
         const inputDiscord = document.getElementById('linkDiscord');
+        const inputEmail = document.getElementById('email');
         const captchaQuestion = document.getElementById('captchaQuestion');
         const captchaInput = document.getElementById('captchaInput');
         const divMessaggio = document.getElementById('messaggio');
@@ -264,10 +295,18 @@
         form.addEventListener('submit', async function(e) {
             e.preventDefault();
             
+            const idInvoice = inputIdInvoice.value.trim();
             const codice = inputCodice.value.trim();
             const linkDiscord = inputDiscord.value.trim();
+            const email = inputEmail.value.trim();
             const captchaUserAnswer = parseInt(captchaInput.value);
             
+            // Verifica ID Invoice
+            if (idInvoice.length < 3) {
+                mostraMessaggio('Inserisci un ID Invoice valido!', 'errore');
+                return;
+            }
+
             // Verifica lunghezza codice
             if (codice.length < 19) {
                 mostraMessaggio('Inserisci un codice completo!', 'errore');
@@ -277,6 +316,13 @@
             // Verifica link Discord
             if (!linkDiscord.includes('discord.gg') && !linkDiscord.includes('discord.com/invite')) {
                 mostraMessaggio('Inserisci un link Discord valido!', 'errore');
+                return;
+            }
+
+            // Verifica email
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(email)) {
+                mostraMessaggio('Inserisci un\'email valida!', 'errore');
                 return;
             }
 
@@ -294,8 +340,10 @@
                         'Content-Type': 'application/json'
                     },
                     body: JSON.stringify({ 
+                        idInvoice: idInvoice,
                         codice: codice,
                         linkDiscord: linkDiscord,
+                        email: email,
                         captchaToken: 'verified'
                     })
                 });
@@ -304,12 +352,14 @@
 
                 if (data.valido) {
                     mostraMessaggio(data.messaggio, 'successo');
+                    inputIdInvoice.value = '';
                     inputCodice.value = '';
                     inputDiscord.value = '';
+                    inputEmail.value = '';
                     generaCaptcha();
                     
                     setTimeout(() => {
-                        alert('✅ Accesso consentito! Il tuo codice è stato verificato.');
+                        alert('✅ Hai riscattato i boost attendi 1-10 minuti');
                     }, 1000);
                 } else {
                     mostraMessaggio(data.messaggio, 'errore');
