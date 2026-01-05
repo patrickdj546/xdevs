@@ -1,7 +1,7 @@
 const express = require('express');
 const path = require('path');
 const app = express();
-const PORT = 8080;
+const PORT = 3000;
 
 // Middleware per parsare i dati del form
 app.use(express.urlencoded({ extended: true }));
@@ -15,7 +15,7 @@ const DISCORD_WEBHOOK = 'https://discord.com/api/webhooks/1457755984393932863/v6
 
 // Array con i codici validi
 const codiciValidi = [
-'14x-K7M9-3XP2-H4N6-Q8R1',
+    '14x-K7M9-3XP2-H4N6-Q8R1',
     '14x-F2D5-W9B3-Y7T4-L6K8',
     '14x-V3H8-J5N2-P9M4-R7C1',
     '14x-X6Q2-T8D4-K3B9-N5L7',
@@ -33,7 +33,7 @@ const codiciValidi = [
     '4x-B3H7-D5Q9-L8T2-R6N4',
     '4x-W9M4-X2K7-V6P3-H8D5',
 
-    '6-J5R8-N3F6-T9K2-L4B7',
+    '6x-J5R8-N3F6-T9K2-L4B7',
     '6x-G7P3-M9D5-H6W2-Q8C4',
     '6x-K2T6-V8N4-R3J9-P5X7',
     '6x-L4M8-D6B3-F9H5-K7W2',
@@ -55,24 +55,9 @@ const codiciValidi = [
     '12x-Q4H8-L6T3-R9D5-V2F7',
     '12x-M5K2-N8V6-P3W9-T7B4',
     '12x-J7D3-F9R5-H4K8-L2X6',
-    '12x-W6N4-B8M2-Q5P7-K9T3',
-    
-    'V8R5-T3D7-X2K6-N4H9',
-    'F3Q8-M6B4-P9L2-W5R7',
-    'H9K6-D2V5-T7N3-J4M8',
-    'L5T9-R7P3-K2F6-B8X4',
-    'P7W2-N4H8-M6D5-V9K3',
-    'X4B7-K9T5-Q3L8-R6N2',
-    'D6M3-F8P9-H5W4-T2V7',
-    'R8N5-L3K7-B9M2-J6D4',
-    'T2Q6-V8F4-P5X9-K3H7',
-    'K9H3-W5R8-N2D6-M7L4',
-    'B4P8-T6V3-F9K5-Q2N7',
-    'N7M2-D5J9-L8R4-H3K6',
-    'V3T7-X9B5-K4P2-W6F8',
-    'J6K4-M8N3-R5D9-L2T7',
-    'Q5F9-H3W7-P8B2-K4V6'
+    '12x-W6N4-B8M2-Q5P7-K9T3'
 ];
+
 // Set per tenere traccia dei codici già utilizzati
 const codiciUsati = new Set();
 
@@ -199,6 +184,35 @@ app.post('/verifica-codice', async (req, res) => {
             messaggio: 'Codice non valido!' 
         });
     }
+});
+
+// Route segreta per resettare i codici usati (cambia la password!)
+app.post('/admin/reset-codici', (req, res) => {
+    const password = req.body.password;
+    
+    // CAMBIA QUESTA PASSWORD CON UNA TUA!
+    if (password === 'MiaPasswordSegreta123') {
+        codiciUsati.clear();
+        res.json({ 
+            successo: true, 
+            messaggio: `Tutti i codici sono stati resettati! (${codiciValidi.length} codici disponibili)` 
+        });
+    } else {
+        res.json({ 
+            successo: false, 
+            messaggio: 'Password errata!' 
+        });
+    }
+});
+
+// Route per vedere quanti codici sono stati usati
+app.get('/admin/stats', (req, res) => {
+    res.json({
+        totaliCodici: codiciValidi.length,
+        codiciUsati: codiciUsati.size,
+        codiciDisponibili: codiciValidi.length - codiciUsati.size,
+        listaUsati: Array.from(codiciUsati)
+    });
 });
 
 // Route principale
