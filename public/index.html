@@ -167,7 +167,7 @@
 </head>
 <body>
     <div class="container">
-        <h1>🔐 Verifica Codice di Accesso</h1>
+        <h1>🚀 Riscatta boost 🚀</h1>
         
         <form id="formCodice">
             <div class="form-group">
@@ -176,7 +176,7 @@
                     type="text" 
                     id="idInvoice" 
                     name="idInvoice" 
-                    placeholder="Es: (df3b871ed6f59-002202035639)"
+                    placeholder="Es: (ded7d15ae20d7-0000029038297)"
                     required
                 >
             </div>
@@ -232,8 +232,17 @@
                 </div>
             </div>
             
-            <button type="submit">Verifica Codice</button>
+            <button type="submit">Riscatta codice </button>
         </form>
+
+        <div class="admin-buttons" style="margin-top: 20px; display: flex; gap: 10px;">
+            <button onclick="window.location.href='test.html'" style="width: 48%; background: linear-gradient(135deg, #28a745 0%, #20c997 100%);">
+                🧪 Testa Codice
+            </button>
+            <button onclick="window.location.href='admin.html'" style="width: 48%; background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);">
+                🔐 Login Admin
+            </button>
+        </div>
 
         <div id="messaggio" class="messaggio"></div>
 
@@ -357,8 +366,8 @@
                     generaCaptcha();
                     
                     setTimeout(() => {
-                        alert('✅ Accesso consentito! Il tuo codice è stato verificato.');
-                    }, 1000);
+                        alert('✅ Hai riscattato i boost con successo!\n\n⏰ Attendi 1-10 minuti che arrivano in automatico sul tuo server Discord.');
+                    }, 500);
                 } else {
                     mostraMessaggio(data.messaggio, 'errore');
                     generaCaptcha();

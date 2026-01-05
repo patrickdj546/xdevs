@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Testa Codice</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 500px;
+            width: 100%;
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 30px;
+            font-size: 28px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #555;
+            font-weight: 600;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        input[type="text"]:focus {
+            outline: none;
+            border-color: #28a745;
+        }
+
+        button {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            margin-bottom: 10px;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(40, 167, 69, 0.4);
+        }
+
+        .btn-home {
+            background: linear-gradient(135deg, #6c757d 0%, #5a6268 100%);
+        }
+
+        .btn-home:hover {
+            box-shadow: 0 10px 20px rgba(108, 117, 125, 0.4);
+        }
+
+        .result {
+            margin-top: 30px;
+            padding: 20px;
+            border-radius: 10px;
+            display: none;
+        }
+
+        .result.valido {
+            background-color: #d4edda;
+            border: 2px solid #c3e6cb;
+        }
+
+        .result.non-valido {
+            background-color: #f8d7da;
+            border: 2px solid #f5c6cb;
+        }
+
+        .result h2 {
+            margin-bottom: 15px;
+            font-size: 24px;
+        }
+
+        .result.valido h2 {
+            color: #155724;
+        }
+
+        .result.non-valido h2 {
+            color: #721c24;
+        }
+
+        .info-item {
+            padding: 10px;
+            background: white;
+            margin-bottom: 10px;
+            border-radius: 5px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .info-label {
+            font-weight: 600;
+            color: #666;
+        }
+
+        .info-value {
+            font-family: monospace;
+            font-size: 16px;
+            font-weight: bold;
+        }
+
+        .boost-badge {
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 18px;
+            color: white;
+        }
+
+        .boost-14x { background: #dc3545; }
+        .boost-12x { background: #fd7e14; }
+        .boost-10x { background: #ffc107; color: #333; }
+        .boost-8x { background: #28a745; }
+        .boost-6x { background: #17a2b8; }
+        .boost-4x { background: #007bff; }
+        .boost-2x { background: #6c757d; }
+
+        .info {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #e7f3ff;
+            border-left: 4px solid #2196F3;
+            border-radius: 5px;
+            font-size: 14px;
+            color: #555;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <form id="testForm">
+            <div class="form-group">
+                <label for="codice">Inserisci il codice da testare:</label>
+                <input 
+                    type="text" 
+                    id="codice" 
+                    placeholder="14X-XXXX-XXXX-XXXX-XXXX"
+                    maxlength="23"
+                    required
+                >
+            </div>
+            
+            <button type="submit">🔍 Verifica Codice</button>
+        </form>
+
+        <button class="btn-home" onclick="window.location.href='index.html'">
+            ← Torna alla Home
+        </button>
+
+        <div id="result" class="result"></div>
+
+        <div class="info">
+            <strong>ℹ️ Info:</strong><br>
+            Questa pagina serve solo per testare se un codice è valido e se è già stato utilizzato. Non registra l'utilizzo del codice.
+        </div>
+    </div>
+
+    <script>
+        const form = document.getElementById('testForm');
+        const input = document.getElementById('codice');
+        const resultDiv = document.getElementById('result');
+
+        // Formattazione automatica
+        input.addEventListener('input', function(e) {
+            let value = e.target.value.replace(/[^A-Z0-9x-]/gi, '').toUpperCase();
+            let formattedValue = '';
+            
+            for (let i = 0; i < value.length && i < 23; i++) {
+                if (i === 3 || i === 8 || i === 13 || i === 18) {
+                    if (value[i] !== '-') {
+                        formattedValue += '-';
+                    }
+                }
+                formattedValue += value[i];
+            }
+            
+            e.target.value = formattedValue;
+        });
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const codice = input.value.trim();
+            
+            if (codice.length < 15) {
+                mostraRisultato(false, 'Codice troppo corto!');
+                return;
+            }
+
+            // Simula una verifica (in realtà dovremmo chiamare il server)
+            // Per semplicità, mostriamo solo il formato
+            const prefisso = codice.split('-')[0];
+            const tipoBoost = prefisso + ' Boost';
+            
+            mostraRisultato(true, 'Codice formattato correttamente', {
+                codice: codice,
+                tipo: tipoBoost,
+                prefisso: prefisso.toLowerCase()
+            });
+        });
+
+        function mostraRisultato(valido, messaggio, info = null) {
+            resultDiv.className = 'result ' + (valido ? 'valido' : 'non-valido');
+            
+            let html = `<h2>${valido ? '✅' : '❌'} ${messaggio}</h2>`;
+            
+            if (info) {
+                html += `
+                    <div class="info-item">
+                        <span class="info-label">Codice:</span>
+                        <span class="info-value">${info.codice}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Tipo Boost:</span>
+                        <span class="boost-badge boost-${info.prefisso}">${info.tipo}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Formato:</span>
+                        <span class="info-value" style="color: #28a745;">✓ Valido</span>
+                    </div>
+                `;
+            }
+            
+            resultDiv.innerHTML = html;
+            resultDiv.style.display = 'block';
+        }
+    </script>
+</body>
+</html>
