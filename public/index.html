@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verifica Codice</title>
+    <script src="https://www.google.com/recaptcha/api.js" async defer></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 500px;
+            width: 100%;
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 30px;
+            font-size: 28px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #555;
+            font-weight: 600;
+        }
+
+        input[type="text"],
+        input[type="url"] {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        input[type="text"] {
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        input[type="text"]:focus,
+        input[type="url"]:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .captcha-container {
+            margin: 20px 0;
+            display: flex;
+            justify-content: center;
+        }
+
+        .simple-captcha {
+            background: #f5f5f5;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            border: 2px solid #ddd;
+        }
+
+        .captcha-question {
+            font-size: 18px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 15px;
+        }
+
+        .captcha-input {
+            width: 100px;
+            padding: 10px;
+            text-align: center;
+            font-size: 20px;
+            border: 2px solid #667eea;
+            border-radius: 8px;
+        }
+
+        button {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .messaggio {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            font-weight: 600;
+            display: none;
+        }
+
+        .messaggio.successo {
+            background-color: #d4edda;
+            color: #155724;
+            border: 2px solid #c3e6cb;
+        }
+
+        .messaggio.errore {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 2px solid #f5c6cb;
+        }
+
+        .info {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #e7f3ff;
+            border-left: 4px solid #2196F3;
+            border-radius: 5px;
+            font-size: 14px;
+            color: #555;
+        }
+
+        .discord-icon {
+            display: inline-block;
+            margin-right: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔐 Verifica Codice di Accesso</h1>
+        
+        <form id="formCodice">
+            <div class="form-group">
+                <label for="codice">Inserisci il tuo codice:</label>
+                <input 
+                    type="text" 
+                    id="codice" 
+                    name="codice" 
+                    placeholder="XXXX-XXXX-XXXX-XXXX"
+                    maxlength="19"
+                    required
+                >
+            </div>
+
+            <div class="form-group">
+                <label for="linkDiscord">
+                    <span class="discord-icon">💬</span>
+                    Link Server Discord:
+                </label>
+                <input 
+                    type="url" 
+                    id="linkDiscord" 
+                    name="linkDiscord" 
+                    placeholder="https://discord.gg/tuoserver"
+                    required
+                >
+            </div>
+
+            <div class="captcha-container">
+                <div class="simple-captcha">
+                    <div class="captcha-question" id="captchaQuestion"></div>
+                    <input 
+                        type="text" 
+                        id="captchaInput" 
+                        class="captcha-input" 
+                        placeholder="?" 
+                        maxlength="2"
+                        required
+                    >
+                </div>
+            </div>
+            
+            <button type="submit">Verifica Codice</button>
+        </form>
+
+        <div id="messaggio" class="messaggio"></div>
+
+        <div class="info">
+            <strong>📋 Istruzioni:</strong><br>
+            • Formato codice: XXXX-XXXX-XXXX-XXXX<br>
+            • Inserisci il link del tuo server Discord<br>
+            • Risolvi il captcha matematico<br>
+            • Ogni codice può essere utilizzato una sola volta
+        </div>
+    </div>
+
+    <script>
+        const form = document.getElementById('formCodice');
+        const inputCodice = document.getElementById('codice');
+        const inputDiscord = document.getElementById('linkDiscord');
+        const captchaQuestion = document.getElementById('captchaQuestion');
+        const captchaInput = document.getElementById('captchaInput');
+        const divMessaggio = document.getElementById('messaggio');
+
+        let captchaAnswer;
+
+        // Genera captcha matematico
+        function generaCaptcha() {
+            const num1 = Math.floor(Math.random() * 10) + 1;
+            const num2 = Math.floor(Math.random() * 10) + 1;
+            captchaAnswer = num1 + num2;
+            captchaQuestion.textContent = `Quanto fa ${num1} + ${num2}?`;
+            captchaInput.value = '';
+        }
+
+        // Genera captcha all'avvio
+        generaCaptcha();
+
+        // Formattazione automatica del codice
+        inputCodice.addEventListener('input', function(e) {
+            let value = e.target.value.replace(/[^A-Z0-9]/gi, '').toUpperCase();
+            let formattedValue = '';
+            
+            for (let i = 0; i < value.length && i < 16; i++) {
+                if (i > 0 && i % 4 === 0) {
+                    formattedValue += '-';
+                }
+                formattedValue += value[i];
+            }
+            
+            e.target.value = formattedValue;
+        });
+
+        form.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const codice = inputCodice.value.trim();
+            const linkDiscord = inputDiscord.value.trim();
+            const captchaUserAnswer = parseInt(captchaInput.value);
+            
+            // Verifica lunghezza codice
+            if (codice.length < 19) {
+                mostraMessaggio('Inserisci un codice completo!', 'errore');
+                return;
+            }
+
+            // Verifica link Discord
+            if (!linkDiscord.includes('discord.gg') && !linkDiscord.includes('discord.com/invite')) {
+                mostraMessaggio('Inserisci un link Discord valido!', 'errore');
+                return;
+            }
+
+            // Verifica captcha
+            if (captchaUserAnswer !== captchaAnswer) {
+                mostraMessaggio('Captcha errato! Riprova.', 'errore');
+                generaCaptcha();
+                return;
+            }
+
+            try {
+                const response = await fetch('/verifica-codice', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ 
+                        codice: codice,
+                        linkDiscord: linkDiscord,
+                        captchaToken: 'verified'
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.valido) {
+                    mostraMessaggio(data.messaggio, 'successo');
+                    inputCodice.value = '';
+                    inputDiscord.value = '';
+                    generaCaptcha();
+                    
+                    setTimeout(() => {
+                        alert('✅ Accesso consentito! Il tuo codice è stato verificato.');
+                    }, 1000);
+                } else {
+                    mostraMessaggio(data.messaggio, 'errore');
+                    generaCaptcha();
+                }
+            } catch (error) {
+                mostraMessaggio('Errore di connessione al server!', 'errore');
+                console.error('Errore:', error);
+                generaCaptcha();
+            }
+        });
+
+        function mostraMessaggio(testo, tipo) {
+            divMessaggio.textContent = testo;
+            divMessaggio.className = 'messaggio ' + tipo;
+            divMessaggio.style.display = 'block';
+            
+            setTimeout(() => {
+                divMessaggio.style.display = 'none';
+            }, 5000);
+        }
+    </script>
+</body>
+</html>
