@@ -167,8 +167,7 @@
 </head>
 <body>
     <div class="container">
-        <h2 style="text-align:center"><u>Riscatta boost</u></h2>
-        <br>
+        <h1>🔐 Verifica Codice di Accesso</h1>
         
         <form id="formCodice">
             <div class="form-group">
@@ -177,7 +176,7 @@
                     type="text" 
                     id="idInvoice" 
                     name="idInvoice" 
-                    placeholder="Es: (df3b871ed6f59-000202035639)"
+                    placeholder="Es: INV-12345 o #ORDER-6789"
                     required
                 >
             </div>
@@ -188,8 +187,8 @@
                     type="text" 
                     id="codice" 
                     name="codice" 
-                    placeholder="XXXX-XXXX-XXXX-XXXX"
-                    maxlength="19"
+                    placeholder="XX-XXXX-XXXX-XXXX-XXXX"
+                    maxlength="23"
                     required
                 >
             </div>
@@ -209,19 +208,15 @@
             </div>
 
             <div class="form-group">
-                <label for="linkDiscord">
-                    <span class="discord-icon">📧</span>
-                    La tua Email:
-                </label>
+                <label for="email">📧 La tua Email:</label>
                 <input 
                     type="email" 
                     id="email" 
                     name="email" 
-                    placeholder="email@esempio.com"
+                    placeholder="tuaemail@esempio.com"
                     required
                 >
-            </div>            
-
+            </div>
 
             <div class="captcha-container">
                 <div class="simple-captcha">
@@ -245,7 +240,7 @@
         <div class="info">
             <strong>📋 Istruzioni:</strong><br>
             • Inserisci l'ID della tua invoice/ordine<br>
-            • Formato codice: XXXX-XXXX-XXXX-XXXX<br>
+            • Formato codice: 14x-XXXX-XXXX-XXXX-XXXX (o 2x, 4x, 6x, 8x, 10x, 12x)<br>
             • Inserisci il link del tuo server Discord<br>
             • Inserisci la tua email<br>
             • Risolvi il captcha matematico<br>
@@ -279,12 +274,15 @@
 
         // Formattazione automatica del codice
         inputCodice.addEventListener('input', function(e) {
-            let value = e.target.value.replace(/[^A-Z0-9]/gi, '').toUpperCase();
+            let value = e.target.value.replace(/[^A-Z0-9x-]/gi, '').toUpperCase();
             let formattedValue = '';
             
-            for (let i = 0; i < value.length && i < 16; i++) {
-                if (i > 0 && i % 4 === 0) {
-                    formattedValue += '-';
+            // Gestisce il formato: 14x-XXXX-XXXX-XXXX-XXXX
+            for (let i = 0; i < value.length && i < 23; i++) {
+                if (i === 3 || i === 8 || i === 13 || i === 18) {
+                    if (value[i] !== '-') {
+                        formattedValue += '-';
+                    }
                 }
                 formattedValue += value[i];
             }
@@ -307,8 +305,8 @@
                 return;
             }
 
-            // Verifica lunghezza codice
-            if (codice.length < 19) {
+            // Verifica lunghezza codice (ora può essere più lungo per i prefissi)
+            if (codice.length < 15) {
                 mostraMessaggio('Inserisci un codice completo!', 'errore');
                 return;
             }
@@ -359,7 +357,7 @@
                     generaCaptcha();
                     
                     setTimeout(() => {
-                        alert('✅ Hai riscattato i boost attendi 1-10 minuti');
+                        alert('✅ Accesso consentito! Il tuo codice è stato verificato.');
                     }, 1000);
                 } else {
                     mostraMessaggio(data.messaggio, 'errore');
