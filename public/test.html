@@ -56,7 +56,7 @@
             font-size: 16px;
             transition: border-color 0.3s;
             text-transform: uppercase;
-            letter-spacing: 2px;
+            letter-spacing: 1px;
         }
 
         input[type="text"]:focus {
@@ -89,6 +89,14 @@
 
         .btn-home:hover {
             box-shadow: 0 10px 20px rgba(108, 117, 125, 0.4);
+        }
+
+        .btn-test {
+            background: linear-gradient(135deg, #17a2b8 0%, #138496 100%);
+        }
+
+        .btn-test:hover {
+            box-shadow: 0 10px 20px rgba(23, 162, 184, 0.4);
         }
 
         .result {
@@ -151,13 +159,37 @@
             color: white;
         }
 
-        .boost-14x { background: #dc3545; }
-        .boost-12x { background: #fd7e14; }
-        .boost-10x { background: #ffc107; color: #333; }
-        .boost-8x { background: #28a745; }
-        .boost-6x { background: #17a2b8; }
-        .boost-4x { background: #007bff; }
         .boost-2x { background: #6c757d; }
+        .boost-4x { background: #007bff; }
+        .boost-6x { background: #17a2b8; }
+        .boost-8x { background: #28a745; }
+        .boost-10x { background: #ffc107; color: #333; }
+        .boost-12x { background: #fd7e14; }
+        .boost-14x { background: #dc3545; }
+
+        .status-badge {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 12px;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        .status-disponibile {
+            background-color: #28a745;
+            color: white;
+        }
+
+        .status-usato {
+            background-color: #dc3545;
+            color: white;
+        }
+
+        .status-sconosciuto {
+            background-color: #6c757d;
+            color: white;
+        }
 
         .info {
             margin-top: 20px;
@@ -168,34 +200,66 @@
             font-size: 14px;
             color: #555;
         }
+
+        .loading {
+            display: none;
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        .loading-spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #28a745;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
     </style>
 </head>
 <body>
     <div class="container">
+        <h1>🧪 Testa Codice</h1>
+        
         <form id="testForm">
             <div class="form-group">
                 <label for="codice">Inserisci il codice da testare:</label>
                 <input 
                     type="text" 
                     id="codice" 
-                    placeholder="14X-XXXX-XXXX-XXXX-XXXX"
-                    maxlength="23"
+                    placeholder="2x-XXXX-XXXX-XXXX-XXXX o 14x-XXXX-XXXX-XXXX-XXXX"
+                    maxlength="24"
                     required
                 >
             </div>
             
-            <button type="submit">🔍 Verifica Codice</button>
+            <div class="loading" id="loading">
+                <div class="loading-spinner"></div>
+                <p>Verifica in corso...</p>
+            </div>
+            
+            <button type="submit" id="testBtn">🔍 Verifica Codice</button>
         </form>
 
         <button class="btn-home" onclick="window.location.href='index.html'">
             ← Torna alla Home
+        </button>
+        <button class="btn-test" onclick="window.location.href='admin.html'" style="margin-top: 10px;">
+            🔧 Pannello Admin
         </button>
 
         <div id="result" class="result"></div>
 
         <div class="info">
             <strong>ℹ️ Info:</strong><br>
-            Questa pagina serve solo per testare se un codice è valido e se è già stato utilizzato. Non registra l'utilizzo del codice.
+            Questa pagina serve solo per testare se un codice è valido e se è già stato utilizzato.<br>
+            <strong>ATTENZIONE:</strong> Questa verifica NON attiva il codice e NON lo marca come usato.
         </div>
     </div>
 
@@ -203,52 +267,131 @@
         const form = document.getElementById('testForm');
         const input = document.getElementById('codice');
         const resultDiv = document.getElementById('result');
+        const loadingDiv = document.getElementById('loading');
+        const testBtn = document.getElementById('testBtn');
 
-        // Formattazione automatica
+        // Formattazione automatica per TUTTI i tipi (2x, 4x, 6x, 8x, 10x, 12x, 14x)
         input.addEventListener('input', function(e) {
             let value = e.target.value.replace(/[^A-Z0-9x-]/gi, '').toUpperCase();
-            let formattedValue = '';
             
-            for (let i = 0; i < value.length && i < 23; i++) {
-                if (i === 3 || i === 8 || i === 13 || i === 18) {
-                    if (value[i] !== '-') {
+            // Converti 'x' in 'X' per uniformità
+            value = value.replace(/x/g, 'X');
+            
+            let formattedValue = '';
+            let charCount = 0;
+            
+            for (let i = 0; i < value.length && i < 24; i++) {
+                const char = value[i];
+                formattedValue += char;
+                charCount++;
+                
+                // Aggiungi trattini nelle posizioni corrette
+                if (charCount === 2 || charCount === 7 || charCount === 12 || charCount === 17) {
+                    if (i < value.length - 1 && value[i + 1] !== '-') {
                         formattedValue += '-';
+                        charCount++;
                     }
                 }
-                formattedValue += value[i];
             }
             
             e.target.value = formattedValue;
         });
 
+        // Valida il formato del codice per TUTTI i tipi
+        function validaFormatoCodice(codice) {
+            // Pattern per tutti i tipi: 2x, 4x, 6x, 8x, 10x, 12x, 14x
+            const pattern = /^([0-9]+)X-[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}$/i;
+            const match = codice.match(pattern);
+            
+            if (!match) return false;
+            
+            // Estrai il numero prima della X
+            const numero = parseInt(match[1]);
+            // Controlla che sia uno dei tipi supportati
+            const tipiSupportati = [2, 4, 6, 8, 10, 12, 14];
+            return tipiSupportati.includes(numero);
+        }
+
         form.addEventListener('submit', async (e) => {
             e.preventDefault();
             
-            const codice = input.value.trim();
+            const codice = input.value.trim().toUpperCase();
             
-            if (codice.length < 15) {
-                mostraRisultato(false, 'Codice troppo corto!');
+            // Reset risultato precedente
+            resultDiv.style.display = 'none';
+            resultDiv.innerHTML = '';
+            
+            // Verifica formato
+            if (!validaFormatoCodice(codice)) {
+                mostraRisultato(false, 'Formato codice non valido! Usa: [tipo]X-XXXX-XXXX-XXXX-XXXX', null, 
+                    'Tipi supportati: 2x, 4x, 6x, 8x, 10x, 12x, 14x');
                 return;
             }
 
-            // Simula una verifica (in realtà dovremmo chiamare il server)
-            // Per semplicità, mostriamo solo il formato
-            const prefisso = codice.split('-')[0];
-            const tipoBoost = prefisso + ' Boost';
+            // Mostra loading
+            loadingDiv.style.display = 'block';
+            testBtn.disabled = true;
             
-            mostraRisultato(true, 'Codice formattato correttamente', {
-                codice: codice,
-                tipo: tipoBoost,
-                prefisso: prefisso.toLowerCase()
-            });
+            try {
+                // Chiama endpoint di TEST (non attiva il codice)
+                const response = await fetch('/test-codice', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ 
+                        codice: codice
+                    })
+                });
+
+                const data = await response.json();
+
+                // Nascondi loading
+                loadingDiv.style.display = 'none';
+                testBtn.disabled = false;
+
+                if (data.successo) {
+                    mostraRisultato(true, 
+                        data.disponibile ? '✅ Codice valido e DISPONIBILE!' : '⚠️ Codice valido ma GIA\' USATO!', 
+                        {
+                            codice: codice,
+                            tipo: data.tipo || codice.split('-')[0] + ' Boost',
+                            prefisso: codice.split('-')[0].toLowerCase(),
+                            disponibile: data.disponibile,
+                            dataCreazione: data.dataCreazione || 'Sconosciuta',
+                            dataUso: data.dataUso || 'Non utilizzato'
+                        });
+                } else {
+                    mostraRisultato(false, data.messaggio || 'Codice non trovato nel database.');
+                }
+            } catch (error) {
+                // Nascondi loading
+                loadingDiv.style.display = 'none';
+                testBtn.disabled = false;
+                
+                console.error('Errore:', error);
+                mostraRisultato(false, 'Errore di connessione al server. Riprova più tardi.');
+            }
         });
 
-        function mostraRisultato(valido, messaggio, info = null) {
+        function mostraRisultato(valido, messaggio, info = null, dettagli = '') {
             resultDiv.className = 'result ' + (valido ? 'valido' : 'non-valido');
             
-            let html = `<h2>${valido ? '✅' : '❌'} ${messaggio}</h2>`;
+            let html = `<h2>${valido ? '🔍' : '❌'} ${messaggio}</h2>`;
+            
+            if (dettagli) {
+                html += `<p style="margin-bottom: 15px; color: #666;">${dettagli}</p>`;
+            }
             
             if (info) {
+                // Determina lo stato
+                let stato = 'sconosciuto';
+                let statoTesto = 'Sconosciuto';
+                if (info.disponibile !== undefined) {
+                    stato = info.disponibile ? 'disponibile' : 'usato';
+                    statoTesto = info.disponibile ? 'Disponibile' : 'Già utilizzato';
+                }
+                
                 html += `
                     <div class="info-item">
                         <span class="info-label">Codice:</span>
@@ -259,8 +402,31 @@
                         <span class="boost-badge boost-${info.prefisso}">${info.tipo}</span>
                     </div>
                     <div class="info-item">
+                        <span class="info-label">Stato:</span>
+                        <span class="status-badge status-${stato}">${statoTesto}</span>
+                    </div>
+                    <div class="info-item">
                         <span class="info-label">Formato:</span>
                         <span class="info-value" style="color: #28a745;">✓ Valido</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Data creazione:</span>
+                        <span class="info-value">${info.dataCreazione}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Ultimo utilizzo:</span>
+                        <span class="info-value">${info.dataUso}</span>
+                    </div>
+                `;
+            } else {
+                html += `
+                    <div class="info-item">
+                        <span class="info-label">Codice inserito:</span>
+                        <span class="info-value">${input.value.trim().toUpperCase() || 'N/A'}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Formato:</span>
+                        <span class="info-value" style="color: #dc3545;">✗ Non valido</span>
                     </div>
                 `;
             }
@@ -268,6 +434,15 @@
             resultDiv.innerHTML = html;
             resultDiv.style.display = 'block';
         }
+
+        // Esempio di codice valido per test rapido
+        function testCodiceEsempio() {
+            input.value = '14X-ABCD-1234-EFGH-5678';
+            form.dispatchEvent(new Event('submit'));
+        }
+
+        // Pulsante per test rapido (solo per debug)
+        // console.log("Usa testCodiceEsempio() per testare un codice di esempio");
     </script>
 </body>
 </html>

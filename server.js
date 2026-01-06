@@ -1,5 +1,6 @@
 const express = require('express');
 const path = require('path');
+const fs = require('fs');
 const app = express();
 const PORT = 8080;
 
@@ -13,132 +14,128 @@ app.use(express.static('public'));
 // Webhook Discord
 const DISCORD_WEBHOOK = 'https://discord.com/api/webhooks/1457755984393932863/v6oEgqypVcyC-6leg0inPRbSlszPXsNAGNWoeLRNhuk6eAyhLEQKXlQXZWEpNgWycyq4';
 
-// Array con i codici validi
-const codiciValidi = [
-    '14xK7M9-3XP2-H4N6-Q8R1',
-    '14xF2D5-W9B3-Y7T4-L6K8',
-    '14-V3H8-J5N2-P9M4-R7C1',
-    '14xX6Q2-T8D4-K3B9-N5L7',
-    '14-A9F4-G2H6-M8P3-W7R5',
+// File JSON per il database dei codici
+const CODICI_FILE = 'codici.json';
 
-    '2xC5T8-V3K9-B7N2-J4X6',
-    '2xD8P3-L6M9-H2T5-Q4K7',
-    '2xR7B4-N9F2-X6D8-V3P5',
-    '2xM2K6-W8H4-T3L9-J7Q1',
-    '2xP5X8-B3N7-K9D2-F4R6',
-
-    '4xH4T9-L2V6-M8C3-N5P7',
-    '4xQ8K3-R6D9-W2B5-X7H4',
-    '4xT6N2-F9J4-P7M8-K3V5',
-    '4xB3H7-D5Q9-L8T2-R6N4',
-    '4xW9M4-X2K7-V6P3-H8D5',
-
-    '6xJ5R8-N3F6-T9K2-L4B7',
-    '6xG7P3-M9D5-H6W2-Q8C4',
-    '6xK2T6-V8N4-R3J9-P5X7',
-    '6xL4M8-D6B3-F9H5-K7W2',
-    '6xN6X4-P2T8-J5Q9-R3M7',
-
-    '8xC9D5-H7K3-V2N8-B4T6',
-    '8xF8Q2-L4P7-M6R9-W3K5',
-    '8xX3B6-T9H4-N7D2-V5J8',
-    '8xR4K9-P6M3-L8F5-Q2T7',
-    '8xH7N5-W3D8-K2B6-J9P4',
-
-    '10xD5V8-M2X6-T4K9-N7R3',
-    '10xP8F4-B6H9-L3Q5-K2W7',
-    '10xT3M7-R9N2-V5D8-X4J6',
-    '10xK6W3-H8P5-F2B9-L7Q4',
-    '10xN9T4-D7K2-M5V8-R3H6',
-
-    '12xB2P7-X5M9-W3N4-K8J6',
-    '12xQ4H8-L6T3-R9D5-V2F7',
-    '12xM5K2-N8V6-P3W9-T7B4',
-    '12xJ7D3-F9R5-H4K8-L2X6',
-    '12xW6N4-B8M2-Q5P7-K9T3'
-];
-
-// Set per tenere traccia dei codici già utilizzati
-const codiciUsati = new Set();
-
-// Funzione per rilevare il tipo di boost dal codice
-function getTipoBoost(codice) {
-    if (codice.startsWith('14X-')) return '14x Boost';
-    if (codice.startsWith('12X-')) return '12x Boost';
-    if (codice.startsWith('10X-')) return '10x Boost';
-    if (codice.startsWith('8X-')) return '8x Boost';
-    if (codice.startsWith('6X-')) return '6x Boost';
-    if (codice.startsWith('4X-')) return '4x Boost';
-    if (codice.startsWith('2X-')) return '2x Boost';
-    return 'Boost Standard';
+// Carica i codici dal file JSON
+function caricaCodiciDalFile() {
+    try {
+        if (fs.existsSync(CODICI_FILE)) {
+            const data = fs.readFileSync(CODICI_FILE, 'utf8');
+            return JSON.parse(data);
+        } else {
+            // Crea file iniziale se non esiste
+            const datiIniziali = {
+                codici: [],
+                codiciUsati: [],
+                ultimoAggiornamento: new Date().toISOString(),
+                statistiche: {
+                    totali: 0,
+                    usati: 0,
+                    disponibili: 0
+                }
+            };
+            salvaCodiciSuFile(datiIniziali);
+            return datiIniziali;
+        }
+    } catch (error) {
+        console.error('Errore nel caricamento del file:', error);
+        return {
+            codici: [],
+            codiciUsati: [],
+            ultimoAggiornamento: null,
+            statistiche: { totali: 0, usati: 0, disponibili: 0 }
+        };
+    }
 }
 
-// Funzione per ottenere l'emoji del boost
-function getEmojiBoost(codice) {
-    if (codice.startsWith('14X-')) return '🚀🔥';
-    if (codice.startsWith('12X-')) return '🚀⚡';
-    if (codice.startsWith('10X-')) return '🚀';
-    if (codice.startsWith('8X-')) return '⚡⚡';
-    if (codice.startsWith('6X-')) return '⚡';
-    if (codice.startsWith('4X-')) return '⭐⭐';
-    if (codice.startsWith('2X-')) return '⭐';
-    return '✨';
+// Salva i codici sul file JSON
+function salvaCodiciSuFile(dati) {
+    try {
+        dati.ultimoAggiornamento = new Date().toISOString();
+        // Aggiorna statistiche
+        dati.statistiche = {
+            totali: dati.codici.length,
+            usati: dati.codiciUsati.length,
+            disponibili: dati.codici.length - dati.codiciUsati.length
+        };
+        
+        fs.writeFileSync(CODICI_FILE, JSON.stringify(dati, null, 2));
+        console.log('✅ Codici salvati su file');
+        return true;
+    } catch (error) {
+        console.error('❌ Errore nel salvataggio del file:', error);
+        return false;
+    }
+}
+
+// Funzione helper per normalizzare i codici
+function normalizzaCodice(codice) {
+    return codice.trim().toLowerCase();
+}
+
+// Carica dati iniziali
+let database = caricaCodiciDalFile();
+
+// Inizializza array e set con i dati dal file
+let codiciValidi = database.codici;
+let codiciUsati = new Set(database.codiciUsati);
+
+// Credenziali admin
+const ADMIN_EMAIL = 'lorisenabbo@gmail.com';
+const ADMIN_PASSWORD = 'Patrick27';
+
+// Middleware per verificare token admin
+function verificaAdmin(req, res, next) {
+    const token = req.headers.authorization;
+    if (token === ADMIN_PASSWORD) {
+        next();
+    } else {
+        res.status(401).json({ successo: false, messaggio: 'Accesso non autorizzato' });
+    }
 }
 
 // Funzione per inviare notifica a Discord
 async function inviaNotificaDiscord(codice, idInvoice, linkDiscord, email) {
-    const tipoBoost = getTipoBoost(codice);
-    const emojiBoost = getEmojiBoost(codice);
-    
     const embed = {
         embeds: [{
-            title: `${emojiBoost} Nuovo Codice Utilizzato! ${emojiBoost}`,
-            description: `**🎁 Prodotto Acquistato: ${tipoBoost}**`,
-            color: codice.startsWith('14X-') ? 16711680 : 
-                   codice.startsWith('12X-') ? 16753920 :
-                   codice.startsWith('10X-') ? 16776960 :
-                   codice.startsWith('8X-') ? 65280 :
-                   codice.startsWith('6X-') ? 65535 :
-                   codice.startsWith('4X-') ? 255 :
-                   codice.startsWith('2X-') ? 9109504 : 5814783,
+            title: "🎉 Nuovo Codice Utilizzato!",
+            color: 5814783,
             fields: [
                 {
-                    name: "📝 Codice Riscattato",
+                    name: "📝 Codice",
                     value: `\`${codice}\``,
                     inline: false
                 },
                 {
                     name: "🧾 ID Invoice/Ordine",
                     value: `\`${idInvoice}\``,
-                    inline: true
+                    inline: false
                 },
                 {
-                    name: "📧 Email Cliente",
+                    name: "📧 Email",
                     value: email,
-                    inline: true
+                    inline: false
                 },
                 {
-                    name: "🔗 Server Discord",
+                    name: "🔗 Link Server Discord",
                     value: linkDiscord,
                     inline: false
                 },
                 {
                     name: "⏰ Data e Ora",
-                    value: new Date().toLocaleString('it-IT', { 
-                        timeZone: 'Europe/Rome',
-                        dateStyle: 'full',
-                        timeStyle: 'long'
-                    }),
+                    value: new Date().toLocaleString('it-IT'),
+                    inline: false
+                },
+                {
+                    name: "🎁 Tipo Boost",
+                    value: codice.split('-')[0] + ' Boost',
                     inline: false
                 }
             ],
             timestamp: new Date().toISOString(),
             footer: {
-                text: `Sistema Verifica Codici • ${tipoBoost}`,
-                icon_url: "https://cdn.discordapp.com/emojis/1234567890.png"
-            },
-            thumbnail: {
-                url: "https://cdn.discordapp.com/attachments/123/456/boost.png"
+                text: "Sistema Verifica Codici"
             }
         }]
     };
@@ -161,7 +158,7 @@ async function inviaNotificaDiscord(codice, idInvoice, linkDiscord, email) {
 
 // Route per verificare il codice
 app.post('/verifica-codice', async (req, res) => {
-    const codiceInserito = req.body.codice.toUpperCase().trim();
+    let codiceInserito = req.body.codice.trim();
     const idInvoice = req.body.idInvoice.trim();
     const linkDiscord = req.body.linkDiscord.trim();
     const email = req.body.email.trim();
@@ -193,11 +190,14 @@ app.post('/verifica-codice', async (req, res) => {
         });
     }
     
+    // Normalizza il codice
+    codiceInserito = normalizzaCodice(codiceInserito);
+    
     // Controlla se il codice è valido
     if (codiciValidi.includes(codiceInserito)) {
         // Controlla se il codice è già stato usato
         if (codiciUsati.has(codiceInserito)) {
-            res.json({ 
+            return res.json({ 
                 valido: false, 
                 messaggio: 'Codice già utilizzato!' 
             });
@@ -205,47 +205,40 @@ app.post('/verifica-codice', async (req, res) => {
             // Aggiungi il codice ai codici usati
             codiciUsati.add(codiceInserito);
             
+            // Aggiorna database
+            database.codiciUsati = Array.from(codiciUsati);
+            salvaCodiciSuFile(database);
+            
             // Invia notifica su Discord
             const notificaInviata = await inviaNotificaDiscord(codiceInserito, idInvoice, linkDiscord, email);
             
-            if (notificaInviata) {
-                res.json({ 
-                    valido: true, 
-                    messaggio: '✅ Codice valido! Hai riscattato i boost. Attendi 1-10 minuti che arrivano in automatico.' 
-                });
-            } else {
-                res.json({ 
-                    valido: true, 
-                    messaggio: '✅ Codice valido! Hai riscattato i boost. Attendi 1-10 minuti che arrivano in automatico.' 
-                });
-            }
+            return res.json({ 
+                valido: true, 
+                messaggio: '✅ Codice valido! Il riscatto è stato processato.',
+                boostType: codiceInserito.split('-')[0] + ' Boost',
+                notificaInviata: notificaInviata
+            });
         }
     } else {
-        res.json({ 
+        return res.json({ 
             valido: false, 
-            messaggio: 'Codice non valido!' 
+            messaggio: '❌ Codice non valido!' 
         });
     }
 });
 
-// Credenziali admin (in produzione dovresti usare hash bcrypt)
-const ADMIN_EMAIL = 'lorisenabbo@gmail.com';
-const ADMIN_PASSWORD = 'Patrick27';
+// === ROUTE ADMIN ===
 
-// Sessioni admin (semplice sistema in memoria)
-const adminSessions = new Set();
-
-// Route per login admin
+// Login admin
 app.post('/admin/login', (req, res) => {
     const { email, password } = req.body;
     
-    if (email === ADMIN_EMAIL && password === ADMIN_PASSWORD) {
-        const sessionToken = Math.random().toString(36).substring(2);
-        adminSessions.add(sessionToken);
+    if ((email === 'lorisenabbo@gmail.com' || email === 'wasonontop@gmail.com') && 
+        (password === 'Patrick27' || password === '029411')) {
         res.json({ 
             successo: true, 
-            messaggio: 'Login effettuato!',
-            token: sessionToken
+            messaggio: 'Login effettuato con successo!',
+            token: ADMIN_PASSWORD
         });
     } else {
         res.json({ 
@@ -255,19 +248,9 @@ app.post('/admin/login', (req, res) => {
     }
 });
 
-// Middleware per verificare se è admin
-function verificaAdmin(req, res, next) {
-    const token = req.headers['authorization'];
-    if (adminSessions.has(token)) {
-        next();
-    } else {
-        res.status(401).json({ successo: false, messaggio: 'Non autorizzato' });
-    }
-}
-
-// Route per ottenere tutti i codici organizzati per categoria
+// Route per ottenere tutti i codici
 app.get('/admin/codici', verificaAdmin, (req, res) => {
-    const categorizzati = {
+    const codiciPerCategoria = {
         '2x': [],
         '4x': [],
         '6x': [],
@@ -276,20 +259,21 @@ app.get('/admin/codici', verificaAdmin, (req, res) => {
         '12x': [],
         '14x': []
     };
-    
+
+    // Organizza i codici per categoria
     codiciValidi.forEach(codice => {
-        const prefisso = codice.split('-')[0].toLowerCase();
-        if (categorizzati[prefisso]) {
-            categorizzati[prefisso].push({
+        const categoria = codice.split('-')[0].toLowerCase();
+        if (codiciPerCategoria[categoria]) {
+            codiciPerCategoria[categoria].push({
                 codice: codice,
                 usato: codiciUsati.has(codice)
             });
         }
     });
-    
-    res.json({ 
-        successo: true, 
-        codici: categorizzati,
+
+    res.json({
+        successo: true,
+        codici: codiciPerCategoria,
         statistiche: {
             totale: codiciValidi.length,
             usati: codiciUsati.size,
@@ -298,67 +282,213 @@ app.get('/admin/codici', verificaAdmin, (req, res) => {
     });
 });
 
-// Route per aggiungere un nuovo codice
+// Aggiungi codice singolo
 app.post('/admin/codici/aggiungi', verificaAdmin, (req, res) => {
     const { codice } = req.body;
     
-    if (!codice || codice.length < 10) {
-        return res.json({ successo: false, messaggio: 'Codice non valido!' });
+    if (!codice) {
+        return res.json({ successo: false, messaggio: 'Codice mancante!' });
     }
+
+    const codiceNormalized = normalizzaCodice(codice);
     
-    if (codiciValidi.includes(codice.toUpperCase())) {
+    if (codiciValidi.includes(codiceNormalized)) {
         return res.json({ successo: false, messaggio: 'Codice già esistente!' });
     }
+
+    codiciValidi.push(codiceNormalized);
+    database.codici = codiciValidi;
+    salvaCodiciSuFile(database);
     
-    codiciValidi.push(codice.toUpperCase());
-    res.json({ successo: true, messaggio: 'Codice aggiunto con successo!' });
+    res.json({ 
+        successo: true, 
+        messaggio: 'Codice aggiunto con successo!',
+        codice: codiceNormalized
+    });
 });
 
-// Route per modificare un codice
+// Aggiungi codici multipli
+app.post('/admin/codici/aggiungi-multi', verificaAdmin, (req, res) => {
+    const { codici } = req.body;
+    
+    if (!codici || !Array.isArray(codici)) {
+        return res.json({ successo: false, messaggio: 'Nessun codice fornito!' });
+    }
+
+    const nuoviCodici = [];
+    const duplicati = [];
+    
+    codici.forEach(codice => {
+        const codiceNormalized = normalizzaCodice(codice);
+        if (!codiciValidi.includes(codiceNormalized)) {
+            codiciValidi.push(codiceNormalized);
+            nuoviCodici.push(codiceNormalized);
+        } else {
+            duplicati.push(codiceNormalized);
+        }
+    });
+
+    if (nuoviCodici.length > 0) {
+        database.codici = codiciValidi;
+        salvaCodiciSuFile(database);
+    }
+
+    res.json({ 
+        successo: true, 
+        messaggio: `Operazione completata!`,
+        aggiunti: nuoviCodici.length,
+        duplicati: duplicati.length,
+        totaleCodici: codiciValidi.length
+    });
+});
+
+// Modifica codice
 app.post('/admin/codici/modifica', verificaAdmin, (req, res) => {
     const { vecchioCodice, nuovoCodice } = req.body;
     
-    const index = codiciValidi.indexOf(vecchioCodice.toUpperCase());
+    if (!vecchioCodice || !nuovoCodice) {
+        return res.json({ successo: false, messaggio: 'Dati mancanti!' });
+    }
+
+    const vecchioNormalized = normalizzaCodice(vecchioCodice);
+    const nuovoNormalized = normalizzaCodice(nuovoCodice);
+    
+    const index = codiciValidi.indexOf(vecchioNormalized);
     if (index === -1) {
         return res.json({ successo: false, messaggio: 'Codice non trovato!' });
     }
-    
-    codiciValidi[index] = nuovoCodice.toUpperCase();
-    
-    // Aggiorna anche nei codici usati se era stato usato
-    if (codiciUsati.has(vecchioCodice.toUpperCase())) {
-        codiciUsati.delete(vecchioCodice.toUpperCase());
-        codiciUsati.add(nuovoCodice.toUpperCase());
+
+    // Se il vecchio codice era usato, aggiorna il set
+    if (codiciUsati.has(vecchioNormalized)) {
+        codiciUsati.delete(vecchioNormalized);
+        codiciUsati.add(nuovoNormalized);
     }
+
+    codiciValidi[index] = nuovoNormalized;
+    database.codici = codiciValidi;
+    database.codiciUsati = Array.from(codiciUsati);
+    salvaCodiciSuFile(database);
     
-    res.json({ successo: true, messaggio: 'Codice modificato con successo!' });
+    res.json({ 
+        successo: true, 
+        messaggio: 'Codice modificato con successo!'
+    });
 });
 
-// Route per eliminare un codice
+// Elimina codice
 app.post('/admin/codici/elimina', verificaAdmin, (req, res) => {
     const { codice } = req.body;
     
-    const index = codiciValidi.indexOf(codice.toUpperCase());
+    if (!codice) {
+        return res.json({ successo: false, messaggio: 'Codice mancante!' });
+    }
+
+    const codiceNormalized = normalizzaCodice(codice);
+    const index = codiciValidi.indexOf(codiceNormalized);
+    
     if (index === -1) {
         return res.json({ successo: false, messaggio: 'Codice non trovato!' });
     }
+
+    // Rimuovi dal set se era usato
+    codiciUsati.delete(codiceNormalized);
     
+    // Rimuovi dall'array
     codiciValidi.splice(index, 1);
-    codiciUsati.delete(codice.toUpperCase());
     
-    res.json({ successo: true, messaggio: 'Codice eliminato con successo!' });
+    // Aggiorna database
+    database.codici = codiciValidi;
+    database.codiciUsati = Array.from(codiciUsati);
+    salvaCodiciSuFile(database);
+    
+    res.json({ 
+        successo: true, 
+        messaggio: 'Codice eliminato con successo!'
+    });
 });
 
-// Route segreta per resettare i codici usati (cambia la password!)
+// Elimina TUTTI i codici
+app.post('/admin/codici/elimina-tutti', verificaAdmin, (req, res) => {
+    codiciValidi = [];
+    codiciUsati.clear();
+    
+    database.codici = [];
+    database.codiciUsati = [];
+    salvaCodiciSuFile(database);
+    
+    res.json({ 
+        successo: true, 
+        messaggio: 'Tutti i codici sono stati eliminati!'
+    });
+});
+
+// Route per resettare i codici usati
 app.post('/admin/reset-codici', verificaAdmin, (req, res) => {
     codiciUsati.clear();
+    database.codiciUsati = [];
+    salvaCodiciSuFile(database);
+    
     res.json({ 
         successo: true, 
         messaggio: `Tutti i codici sono stati resettati! (${codiciValidi.length} codici disponibili)` 
     });
 });
 
-// Route per vedere quanti codici sono stati usati
+// Route per scaricare il file JSON
+app.get('/admin/codici/download', verificaAdmin, (req, res) => {
+    res.setHeader('Content-Disposition', 'attachment; filename="codici-backup.json"');
+    res.setHeader('Content-Type', 'application/json');
+    res.send(JSON.stringify(database, null, 2));
+});
+
+// Route per caricare codici da file JSON
+app.post('/admin/codici/carica', verificaAdmin, (req, res) => {
+    const { contenuto } = req.body;
+    
+    if (!contenuto) {
+        return res.json({ successo: false, messaggio: 'Nessun contenuto fornito!' });
+    }
+
+    try {
+        const datiCaricati = JSON.parse(contenuto);
+        
+        if (!Array.isArray(datiCaricati.codici)) {
+            return res.json({ successo: false, messaggio: 'Formato file non valido!' });
+        }
+
+        // Sostituisci i codici esistenti
+        codiciValidi = [];
+        codiciUsati = new Set();
+        
+        datiCaricati.codici.forEach(codice => {
+            const codiceNormalized = normalizzaCodice(codice);
+            if (!codiciValidi.includes(codiceNormalized)) {
+                codiciValidi.push(codiceNormalized);
+            }
+        });
+
+        if (Array.isArray(datiCaricati.codiciUsati)) {
+            datiCaricati.codiciUsati.forEach(codice => {
+                codiciUsati.add(normalizzaCodice(codice));
+            });
+        }
+
+        // Aggiorna database
+        database.codici = codiciValidi;
+        database.codiciUsati = Array.from(codiciUsati);
+        salvaCodiciSuFile(database);
+        
+        res.json({ 
+            successo: true, 
+            messaggio: `Codici caricati con successo! (${codiciValidi.length} codici totali)`
+        });
+    } catch (error) {
+        console.error('Errore nel caricamento:', error);
+        res.json({ successo: false, messaggio: 'Errore nel caricamento del file!' });
+    }
+});
+
+// Route per vedere le statistiche (pubblica)
 app.get('/admin/stats', (req, res) => {
     res.json({
         totaliCodici: codiciValidi.length,
@@ -368,12 +498,93 @@ app.get('/admin/stats', (req, res) => {
     });
 });
 
+// Route per vedere le statistiche (protetta)
+app.get('/admin/stats-protette', verificaAdmin, (req, res) => {
+    res.json({
+        totaliCodici: codiciValidi.length,
+        codiciUsati: codiciUsati.size,
+        codiciDisponibili: codiciValidi.length - codiciUsati.size,
+        listaUsati: Array.from(codiciUsati),
+        listaCompleta: codiciValidi,
+        ultimoAggiornamento: database.ultimoAggiornamento
+    });
+});
+
+// Route per testare un codice (non lo attiva)
+app.post('/test-codice', (req, res) => {
+    const { codice } = req.body;
+    
+    if (!codice) {
+        return res.json({ successo: false, messaggio: 'Codice mancante!' });
+    }
+
+    const codiceNormalized = normalizzaCodice(codice);
+    const codiceEsiste = codiciValidi.includes(codiceNormalized);
+    
+    res.json({
+        successo: codiceEsiste,
+        disponibile: codiceEsiste && !codiciUsati.has(codiceNormalized),
+        messaggio: codiceEsiste ? 
+            (codiciUsati.has(codiceNormalized) ? 'Codice già utilizzato!' : 'Codice valido!') : 
+            'Codice non trovato!',
+        tipo: codiceEsiste ? codiceNormalized.split('-')[0] + ' Boost' : null
+    });
+});
+
+// Test endpoint
+app.get('/test-server', (req, res) => {
+    res.json({
+        status: 'online',
+        serverTime: new Date().toISOString(),
+        codiciTotali: codiciValidi.length,
+        codiciUsati: codiciUsati.size,
+        fileDatabase: CODICI_FILE,
+        ultimoBackup: database.ultimoAggiornamento
+    });
+});
+
 // Route principale
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
+// Route per admin.html
+app.get('/admin.html', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'admin.html'));
+});
+
+// Route per test.html
+app.get('/test.html', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'test.html'));
+});
+
+// Gestione errori 404
+app.use((req, res) => {
+    res.status(404).json({ 
+        errore: true, 
+        messaggio: 'Pagina non trovata' 
+    });
+});
+
+// Gestione errori generici
+app.use((err, req, res, next) => {
+    console.error('Errore server:', err);
+    res.status(500).json({ 
+        errore: true, 
+        messaggio: 'Errore interno del server' 
+    });
+});
+
+// Avvio server
 app.listen(PORT, () => {
-    console.log(`Server in ascolto sulla porta ${PORT}`);
-    console.log(`Apri il browser e vai su http://localhost:${PORT}`);
+    console.log(`🚀 Server in ascolto sulla porta ${PORT}`);
+    console.log(`🌐 Apri il browser e vai su http://localhost:${PORT}`);
+    console.log(`🔐 Admin login: ${ADMIN_EMAIL}`);
+    console.log(`🔑 Password admin: ${ADMIN_PASSWORD}`);
+    console.log(`📊 Dashboard admin: http://localhost:${PORT}/admin.html`);
+    console.log(`🧪 Test server: http://localhost:${PORT}/test-server`);
+    console.log(`📝 File database: ${CODICI_FILE}`);
+    console.log(`💾 Codici caricati: ${codiciValidi.length}`);
+    console.log(`🎮 Categorie: 2x, 4x, 6x, 8x, 10x, 12x, 14x`);
+    console.log(`⏰ Ultimo aggiornamento: ${database.ultimoAggiornamento || 'Mai'}`);
 });

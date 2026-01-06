@@ -55,7 +55,9 @@
 
         input[type="email"],
         input[type="password"],
-        input[type="text"] {
+        input[type="text"],
+        input[type="file"],
+        textarea {
             width: 100%;
             padding: 15px;
             border: 2px solid #ddd;
@@ -64,7 +66,8 @@
             transition: border-color 0.3s;
         }
 
-        input:focus {
+        input:focus,
+        textarea:focus {
             outline: none;
             border-color: #667eea;
         }
@@ -223,7 +226,19 @@
 
         .btn-success { background: linear-gradient(135deg, #28a745 0%, #20c997 100%); }
         .btn-danger { background: linear-gradient(135deg, #dc3545 0%, #c82333 100%); }
+        .btn-warning { background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%); }
         .btn-secondary { background: linear-gradient(135deg, #6c757d 0%, #5a6268 100%); }
+
+        .btn-info { 
+        background: linear-gradient(135deg, #17a2b8 0%, #138496 100%); 
+        color: white;
+        }
+
+        /* Aggiungi dopo le definizioni .btn-info */
+        .btn-info:hover {
+            background: linear-gradient(135deg, #138496 0%, #117a8b 100%);
+            transform: translateY(-2px);
+        }
 
         .messaggio {
             padding: 15px;
@@ -267,6 +282,63 @@
             display: flex;
             gap: 10px;
             margin-top: 20px;
+        }
+
+        .metodo-aggiunta {
+            display: none;
+            margin-top: 20px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            border-left: 4px solid #667eea;
+        }
+
+        .scelta-metodo {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .btn-metodo {
+            flex: 1;
+            padding: 12px;
+            background: #e9ecef;
+            color: #495057;
+            border: 2px solid transparent;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-metodo:hover {
+            background: #dee2e6;
+        }
+
+        .btn-metodo.active {
+            background: #667eea;
+            color: white;
+            border-color: #764ba2;
+        }
+
+        .info-box {
+            background: #e7f3ff;
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 15px;
+            border-left: 4px solid #007bff;
+        }
+
+        .info-box p {
+            margin: 5px 0;
+            font-size: 14px;
+            color: #004085;
+        }
+
+        textarea {
+            font-family: monospace;
+            resize: vertical;
+            min-height: 150px;
         }
     </style>
 </head>
@@ -313,12 +385,15 @@
             </div>
         </div>
 
-        <!-- Azioni -->
-        <div class="actions">
-            <button class="btn-success" onclick="mostraModalAggiungi()">➕ Aggiungi Codice</button>
-            <button class="btn-danger" onclick="resetCodici()">🔄 Reset Codici Usati</button>
-            <button class="btn-secondary" onclick="logout()">🚪 Logout</button>
-        </div>
+    <!-- Sostituisci la sezione "Azioni" esistente con questa: -->
+    <div class="actions">
+    <button class="btn-success" onclick="mostraModalAggiungi()">➕ Aggiungi Codici</button>
+    <button class="btn-danger" onclick="resetCodici()">🔄 Reset Codici Usati</button>
+    <button class="btn-warning" onclick="eliminaTuttiCodici()">🗑️ Cancella Tutti i Codici</button>
+    <button class="btn-info" onclick="scaricaBackup()">💾 Scarica Backup</button>
+    <button class="btn-secondary" onclick="mostraCaricaBackup()">📂 Carica Backup</button>
+    <button class="btn-secondary" onclick="logout()">🚪 Logout</button>
+    </div>
 
         <!-- Categorie Codici -->
         <div id="categorieContainer"></div>
@@ -328,10 +403,49 @@
     <div class="modal" id="modalCodice">
         <div class="modal-content">
             <h2 id="modalTitolo">Aggiungi Codice</h2>
-            <div class="form-group">
-                <label>Codice:</label>
-                <input type="text" id="modalInputCodice" placeholder="14x-XXXX-XXXX-XXXX-XXXX">
+            
+            <div class="scelta-metodo">
+                <button type="button" class="btn-metodo active" onclick="cambiaMetodo('singolo')">
+                    📝 Inserisci Singolo
+                </button>
+                <button type="button" class="btn-metodo" onclick="cambiaMetodo('file')">
+                    📄 Carica File
+                </button>
             </div>
+
+            <!-- Metodo Singolo Codice -->
+            <div id="metodoSingolo" class="metodo-aggiunta" style="display: block;">
+                <div class="form-group">
+                    <label>Codice:</label>
+                    <input type="text" id="modalInputCodice" placeholder="14x-XXXX-XXXX-XXXX-XXXX">
+                </div>
+                <div class="info-box">
+                    <p><strong>Formato:</strong> [tipo] - [codice] (es: 14x-ABCD-1234-EFGH-5678)</p>
+                    <p><strong>Tipi supportati:</strong> 14x, 12x, 10x, 8x, 6x, 4x, 2x</p>
+                </div>
+            </div>
+
+            <!-- Metodo Caricamento File -->
+            <div id="metodoFile" class="metodo-aggiunta">
+                <div class="form-group">
+                    <label>Seleziona File:</label>
+                    <input type="file" id="fileCodici" accept=".txt,.csv">
+                </div>
+                <div class="form-group">
+                    <label>Oppure incolla i codici qui:</label>
+                    <textarea id="textareaCodici" placeholder="Incolla i codici qui, uno per riga...
+Esempio:
+14x-ABCD-1234-EFGH-5678
+12x-WXYZ-9876-PQRS-4321
+10x-MNOP-2468-HIJK-1357"></textarea>
+                </div>
+                <div class="info-box">
+                    <p><strong>Formato file:</strong> File di testo (.txt) con un codice per riga</p>
+                    <p><strong>Formato codici:</strong> [tipo] - [codice] (es: 14x-ABCD-1234-EFGH-5678)</p>
+                    <p><strong>Nota:</strong> I codici duplicati verranno ignorati automaticamente</p>
+                </div>
+            </div>
+
             <div class="modal-buttons">
                 <button class="btn-success" onclick="salvaCodice()">Salva</button>
                 <button class="btn-secondary" onclick="chiudiModal()">Annulla</button>
@@ -342,6 +456,7 @@
     <script>
         let adminToken = null;
         let codiceInModifica = null;
+        let metodoAttuale = 'singolo';
 
         // Login
         document.getElementById('loginForm').addEventListener('submit', async (e) => {
@@ -440,16 +555,55 @@
             return html;
         }
 
+        function cambiaMetodo(metodo) {
+            metodoAttuale = metodo;
+            
+            // Aggiorna pulsanti
+            document.querySelectorAll('.btn-metodo').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            // Mostra il metodo selezionato
+            document.getElementById('metodoSingolo').style.display = metodo === 'singolo' ? 'block' : 'none';
+            document.getElementById('metodoFile').style.display = metodo === 'file' ? 'block' : 'none';
+            
+            // Aggiorna titolo
+            document.getElementById('modalTitolo').textContent = metodo === 'singolo' ? 'Aggiungi Codice Singolo' : 'Carica Codici da File';
+        }
+
         function mostraModalAggiungi() {
-            document.getElementById('modalTitolo').textContent = 'Aggiungi Codice';
+            metodoAttuale = 'singolo';
+            document.getElementById('modalTitolo').textContent = 'Aggiungi Codice Singolo';
             document.getElementById('modalInputCodice').value = '';
+            document.getElementById('fileCodici').value = '';
+            document.getElementById('textareaCodici').value = '';
+            
+            // Reset UI
+            document.querySelectorAll('.btn-metodo').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            document.querySelector('.btn-metodo').classList.add('active');
+            document.getElementById('metodoSingolo').style.display = 'block';
+            document.getElementById('metodoFile').style.display = 'none';
+            
             codiceInModifica = null;
             document.getElementById('modalCodice').style.display = 'block';
         }
 
         function modificaCodice(codice) {
+            metodoAttuale = 'singolo';
             document.getElementById('modalTitolo').textContent = 'Modifica Codice';
             document.getElementById('modalInputCodice').value = codice;
+            
+            // Mostra solo metodo singolo per modifica
+            document.querySelectorAll('.btn-metodo').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            document.querySelector('.btn-metodo').classList.add('active');
+            document.getElementById('metodoSingolo').style.display = 'block';
+            document.getElementById('metodoFile').style.display = 'none';
+            
             codiceInModifica = codice;
             document.getElementById('modalCodice').style.display = 'block';
         }
@@ -459,43 +613,100 @@
         }
 
         async function salvaCodice() {
-            const nuovoCodice = document.getElementById('modalInputCodice').value.toUpperCase();
-
-            if (!nuovoCodice) {
-                alert('Inserisci un codice!');
-                return;
-            }
-
             try {
-                let url, body;
-                if (codiceInModifica) {
-                    url = '/admin/codici/modifica';
-                    body = { vecchioCodice: codiceInModifica, nuovoCodice };
+                if (metodoAttuale === 'singolo') {
+                    // Metodo singolo codice
+                    const nuovoCodice = document.getElementById('modalInputCodice').value.toUpperCase().trim();
+                    
+                    if (!nuovoCodice) {
+                        alert('Inserisci un codice!');
+                        return;
+                    }
+                    
+                    let url, body;
+                    if (codiceInModifica) {
+                        url = '/admin/codici/modifica';
+                        body = { vecchioCodice: codiceInModifica, nuovoCodice };
+                    } else {
+                        url = '/admin/codici/aggiungi';
+                        body = { codice: nuovoCodice };
+                    }
+                    
+                    const response = await fetch(url, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': adminToken
+                        },
+                        body: JSON.stringify(body)
+                    });
+                    
+                    const data = await response.json();
+                    
+                    if (data.successo) {
+                        mostraMessaggio('dashboardMessage', data.messaggio, 'successo');
+                        chiudiModal();
+                        caricaCodici();
+                    } else {
+                        alert(data.messaggio);
+                    }
+                    
                 } else {
-                    url = '/admin/codici/aggiungi';
-                    body = { codice: nuovoCodice };
-                }
-
-                const response = await fetch(url, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': adminToken
-                    },
-                    body: JSON.stringify(body)
-                });
-
-                const data = await response.json();
-
-                if (data.successo) {
-                    mostraMessaggio('dashboardMessage', data.messaggio, 'successo');
-                    chiudiModal();
-                    caricaCodici();
-                } else {
-                    alert(data.messaggio);
+                    // Metodo file/testo
+                    const fileInput = document.getElementById('fileCodici');
+                    const textarea = document.getElementById('textareaCodici').value.trim();
+                    let codici = [];
+                    
+                    if (fileInput.files.length > 0) {
+                        // Leggi file
+                        const file = fileInput.files[0];
+                        const text = await file.text();
+                        codici = text.split('\n')
+                            .map(line => line.trim())
+                            .filter(line => line.length > 0);
+                    } else if (textarea) {
+                        // Leggi textarea
+                        codici = textarea.split('\n')
+                            .map(line => line.trim())
+                            .filter(line => line.length > 0);
+                    } else {
+                        alert('Carica un file o inserisci dei codici nel riquadro di testo!');
+                        return;
+                    }
+                    
+                    if (codici.length === 0) {
+                        alert('Nessun codice valido trovato!');
+                        return;
+                    }
+                    
+                    if (!confirm(`Vuoi aggiungere ${codici.length} codici?`)) {
+                        return;
+                    }
+                    
+                    const response = await fetch('/admin/codici/aggiungi-multi', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': adminToken
+                        },
+                        body: JSON.stringify({ codici })
+                    });
+                    
+                    const data = await response.json();
+                    
+                    if (data.successo) {
+                        mostraMessaggio('dashboardMessage', 
+                            `Aggiunti ${data.aggiunti} codici. Duplicati ignorati: ${data.duplicati}`, 
+                            'successo');
+                        chiudiModal();
+                        caricaCodici();
+                    } else {
+                        alert(data.messaggio);
+                    }
                 }
             } catch (error) {
                 alert('Errore nel salvataggio!');
+                console.error(error);
             }
         }
 
@@ -522,6 +733,28 @@
                 }
             } catch (error) {
                 alert('Errore nell\'eliminazione!');
+            }
+        }
+
+        async function eliminaTuttiCodici() {
+            if (!confirm('⚠️ ATTENZIONE: Vuoi davvero eliminare TUTTI i codici? Questa azione è irreversibile!')) return;
+
+            try {
+                const response = await fetch('/admin/codici/elimina-tutti', {
+                    method: 'POST',
+                    headers: { 'Authorization': adminToken }
+                });
+
+                const data = await response.json();
+
+                if (data.successo) {
+                    mostraMessaggio('dashboardMessage', data.messaggio, 'successo');
+                    caricaCodici();
+                } else {
+                    alert(data.messaggio);
+                }
+            } catch (error) {
+                alert('Errore nell\'eliminazione di tutti i codici!');
             }
         }
 
@@ -560,6 +793,78 @@
             div.style.display = 'block';
             setTimeout(() => { div.style.display = 'none'; }, 5000);
         }
+        async function scaricaBackup() {
+    try {
+        const response = await fetch('/admin/codici/download', {
+            headers: { 'Authorization': adminToken }
+        });
+        
+        if (response.ok) {
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'codici-backup.json';
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(url);
+            document.body.removeChild(a);
+            
+            mostraMessaggio('dashboardMessage', 'Backup scaricato con successo!', 'successo');
+        } else {
+            mostraMessaggio('dashboardMessage', 'Errore nello scaricamento del backup!', 'errore');
+        }
+    } catch (error) {
+        mostraMessaggio('dashboardMessage', 'Errore di connessione!', 'errore');
+    }
+}
+
+function mostraCaricaBackup() {
+    const inputFile = document.createElement('input');
+    inputFile.type = 'file';
+    inputFile.accept = '.json';
+    
+    inputFile.onchange = async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        
+        const reader = new FileReader();
+        reader.onload = async (event) => {
+            try {
+                const contenuto = event.target.result;
+                // Verifica che sia JSON valido
+                JSON.parse(contenuto);
+                
+                if (!confirm('⚠️ ATTENZIONE: Questo sostituirà TUTTI i codici attuali con quelli dal file. Continuare?')) {
+                    return;
+                }
+                
+                const response = await fetch('/admin/codici/carica', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': adminToken
+                    },
+                    body: JSON.stringify({ contenuto: contenuto })
+                });
+                
+                const data = await response.json();
+                
+                if (data.successo) {
+                    mostraMessaggio('dashboardMessage', data.messaggio, 'successo');
+                    caricaCodici();
+                } else {
+                    mostraMessaggio('dashboardMessage', data.messaggio, 'errore');
+                }
+            } catch (error) {
+                mostraMessaggio('dashboardMessage', 'File JSON non valido!', 'errore');
+            }
+        };
+        reader.readAsText(file);
+    };
+    
+    inputFile.click();
+}
     </script>
 </body>
 </html>

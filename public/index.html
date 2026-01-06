@@ -50,7 +50,8 @@
         }
 
         input[type="text"],
-        input[type="url"] {
+        input[type="url"],
+        input[type="email"] {
             width: 100%;
             padding: 15px;
             border: 2px solid #ddd;
@@ -61,11 +62,12 @@
 
         input[type="text"] {
             text-transform: uppercase;
-            letter-spacing: 2px;
+            letter-spacing: 1px;
         }
 
         input[type="text"]:focus,
-        input[type="url"]:focus {
+        input[type="url"]:focus,
+        input[type="email"]:focus {
             outline: none;
             border-color: #667eea;
         }
@@ -163,11 +165,21 @@
             display: inline-block;
             margin-right: 5px;
         }
+
+        .admin-buttons {
+            margin-top: 20px;
+            display: flex;
+            gap: 10px;
+        }
+
+        .admin-buttons button {
+            flex: 1;
+        }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>🚀 Riscatta boost 🚀</h1>
+        <h1>🚀 Riscatta Boost! 🚀</h1>
         
         <form id="formCodice">
             <div class="form-group">
@@ -176,7 +188,7 @@
                     type="text" 
                     id="idInvoice" 
                     name="idInvoice" 
-                    placeholder="Es: (ded7d15ae20d7-0000029038297)"
+                    placeholder="Es:(ded7d15ae20d7-0000009038297)"
                     required
                 >
             </div>
@@ -187,8 +199,8 @@
                     type="text" 
                     id="codice" 
                     name="codice" 
-                    placeholder="XXXXXX-XXXX-XXXX-XXXX"
-                    maxlength="23"
+                    placeholder="xx-XXXX-XXXX-XXXX-XXXX"
+                    maxlength="24"
                     required
                 >
             </div>
@@ -232,14 +244,14 @@
                 </div>
             </div>
             
-            <button type="submit">Riscatta codice </button>
+            <button type="submit" id="submitBtn">Riscatta Codice </button>
         </form>
 
-        <div class="admin-buttons" style="margin-top: 20px; display: flex; gap: 10px;">
-            <button onclick="window.location.href='test.html'" style="width: 48%; background: linear-gradient(135deg, #28a745 0%, #20c997 100%);">
+        <div class="admin-buttons">
+            <button onclick="window.location.href='test.html'" style="background: linear-gradient(135deg, #28a745 0%, #20c997 100%);">
                 🧪 Testa Codice
             </button>
-            <button onclick="window.location.href='admin.html'" style="width: 48%; background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);">
+            <button onclick="window.location.href='admin.html'" style="background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);">
                 🔐 Login Admin
             </button>
         </div>
@@ -248,8 +260,8 @@
 
         <div class="info">
             <strong>📋 Istruzioni:</strong><br>
-            • Inserisci l'ID della tua invoice/ordine<br>
-            • Formato codice: 14x-XXXX-XXXX-XXXX-XXXX (o 2x, 4x, 6x, 8x, 10x, 12x)<br>
+            • Inserisci l'ID della tuo ordine Es: (ded7d15ae20d7-0000009038297)<br>
+            • Formato codice: xx-XXXX-XXXX-XXXX-XXXX<br>
             • Inserisci il link del tuo server Discord<br>
             • Inserisci la tua email<br>
             • Risolvi il captcha matematico<br>
@@ -266,8 +278,10 @@
         const captchaQuestion = document.getElementById('captchaQuestion');
         const captchaInput = document.getElementById('captchaInput');
         const divMessaggio = document.getElementById('messaggio');
+        const submitBtn = document.getElementById('submitBtn');
 
         let captchaAnswer;
+        let isSubmitting = false;
 
         // Genera captcha matematico
         function generaCaptcha() {
@@ -281,29 +295,82 @@
         // Genera captcha all'avvio
         generaCaptcha();
 
-        // Formattazione automatica del codice
+        // Formattazione automatica del codice intelligente
         inputCodice.addEventListener('input', function(e) {
             let value = e.target.value.replace(/[^A-Z0-9x-]/gi, '').toUpperCase();
+            
+            // Rimuovi tutti i trattini esistenti per ricostruire il formato
+            const cleanValue = value.replace(/-/g, '');
+            
+            // Determina il formato in base al prefisso
             let formattedValue = '';
             
-            // Gestisce il formato: 14x-XXXX-XXXX-XXXX-XXXX
-            for (let i = 0; i < value.length && i < 23; i++) {
-                if (i === 3 || i === 8 || i === 13 || i === 18) {
-                    if (value[i] !== '-') {
+            if (cleanValue.length === 0) {
+                formattedValue = '';
+            } 
+            // Se inizia con 2x, 4x, 6x, 8x (formato con 5 gruppi)
+            else if (cleanValue.match(/^[2468]X/)) {
+                // Formato: 2X-XXXX-XXXX-XXXX-XXXX (lunghezza totale: 24 caratteri)
+                for (let i = 0; i < cleanValue.length && i < 19; i++) {
+                    formattedValue += cleanValue[i];
+                    // Aggiungi trattini dopo: 2, 7, 12, 17 (indici: 1, 6, 11, 16)
+                    if ((i === 1 || i === 6 || i === 11 || i === 16) && i < cleanValue.length - 1) {
                         formattedValue += '-';
                     }
                 }
-                formattedValue += value[i];
+            }
+            // Se inizia con 10x, 12x, 14x (formato con 4 gruppi)
+            else if (cleanValue.match(/^(10|12|14)X/)) {
+                // Formato: 14X-XXXX-XXXX-XXXX (lunghezza totale: 19 caratteri)
+                for (let i = 0; i < cleanValue.length && i < 15; i++) {
+                    formattedValue += cleanValue[i];
+                    // Aggiungi trattini dopo: 3, 8, 13 (indici: 2, 7, 12)
+                    if ((i === 2 || i === 7 || i === 12) && i < cleanValue.length - 1) {
+                        formattedValue += '-';
+                    }
+                }
+            }
+            // Per qualsiasi altro formato, lascia che l'utente inserisca manualmente
+            else {
+                formattedValue = value;
             }
             
             e.target.value = formattedValue;
         });
 
+        // Helper per mostrare messaggi
+        function mostraMessaggio(testo, tipo) {
+            divMessaggio.textContent = testo;
+            divMessaggio.className = 'messaggio ' + tipo;
+            divMessaggio.style.display = 'block';
+            
+            setTimeout(() => {
+                divMessaggio.style.display = 'none';
+            }, 5000);
+        }
+
+        // Valida il formato del codice
+        function validaFormatoCodice(codice) {
+            // Rimuovi spazi e converte in maiuscolo
+            codice = codice.toUpperCase().trim();
+            
+            // Pattern per 2x, 4x, 6x, 8x (5 gruppi)
+            const pattern5Gruppi = /^[2468]X-[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}$/;
+            
+            // Pattern per 10x, 12x, 14x (4 gruppi)
+            const pattern4Gruppi = /^(10|12|14)X-[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}$/;
+            
+            return pattern5Gruppi.test(codice) || pattern4Gruppi.test(codice);
+        }
+
+        // Gestione del submit del form
         form.addEventListener('submit', async function(e) {
             e.preventDefault();
             
+            if (isSubmitting) return;
+            
             const idInvoice = inputIdInvoice.value.trim();
-            const codice = inputCodice.value.trim();
+            let codice = inputCodice.value.trim();
             const linkDiscord = inputDiscord.value.trim();
             const email = inputEmail.value.trim();
             const captchaUserAnswer = parseInt(captchaInput.value);
@@ -311,18 +378,21 @@
             // Verifica ID Invoice
             if (idInvoice.length < 3) {
                 mostraMessaggio('Inserisci un ID Invoice valido!', 'errore');
+                inputIdInvoice.focus();
                 return;
             }
 
-            // Verifica lunghezza codice (ora può essere più lungo per i prefissi)
-            if (codice.length < 15) {
-                mostraMessaggio('Inserisci un codice completo!', 'errore');
+            // Verifica formato codice
+            if (!validaFormatoCodice(codice)) {
+                mostraMessaggio('Formato codice non valido! Usa: 2X-XXXX-XXXX-XXXX-XXXX o 14X-XXXX-XXXX-XXXX', 'errore');
+                inputCodice.focus();
                 return;
             }
 
             // Verifica link Discord
             if (!linkDiscord.includes('discord.gg') && !linkDiscord.includes('discord.com/invite')) {
                 mostraMessaggio('Inserisci un link Discord valido!', 'errore');
+                inputDiscord.focus();
                 return;
             }
 
@@ -330,15 +400,23 @@
             const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
             if (!emailRegex.test(email)) {
                 mostraMessaggio('Inserisci un\'email valida!', 'errore');
+                inputEmail.focus();
                 return;
             }
 
             // Verifica captcha
-            if (captchaUserAnswer !== captchaAnswer) {
+            if (isNaN(captchaUserAnswer) || captchaUserAnswer !== captchaAnswer) {
                 mostraMessaggio('Captcha errato! Riprova.', 'errore');
+                captchaInput.value = '';
+                captchaInput.focus();
                 generaCaptcha();
                 return;
             }
+
+            // Disabilita il bottone durante l'invio
+            isSubmitting = true;
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Verifica in corso...';
 
             try {
                 const response = await fetch('/verifica-codice', {
@@ -348,7 +426,7 @@
                     },
                     body: JSON.stringify({ 
                         idInvoice: idInvoice,
-                        codice: codice,
+                        codice: codice.toUpperCase(),
                         linkDiscord: linkDiscord,
                         email: email,
                         captchaToken: 'verified'
@@ -359,35 +437,55 @@
 
                 if (data.valido) {
                     mostraMessaggio(data.messaggio, 'successo');
+                    
+                    // Mostra messaggio di conferma
+                    setTimeout(() => {
+                        const boostType = data.boostType || codice.split('-')[0] + ' Boost';
+                        const alertMessage = `✅ ${data.messaggio}\n\n🎁 **${boostType}** riscattato con successo!\n\n⏰ I boost arriveranno in automatico sul tuo server Discord entro 1-10 minuti.\n\n📧 Riceverai una conferma all'email: ${email}`;
+                        
+                        alert(alertMessage);
+                    }, 500);
+                    
+                    // Pulisci il form
                     inputIdInvoice.value = '';
                     inputCodice.value = '';
                     inputDiscord.value = '';
                     inputEmail.value = '';
                     generaCaptcha();
                     
-                    setTimeout(() => {
-                        alert('✅ Hai riscattato i boost con successo!\n\n⏰ Attendi 1-10 minuti che arrivano in automatico sul tuo server Discord.');
-                    }, 500);
                 } else {
                     mostraMessaggio(data.messaggio, 'errore');
                     generaCaptcha();
                 }
             } catch (error) {
-                mostraMessaggio('Errore di connessione al server!', 'errore');
                 console.error('Errore:', error);
+                mostraMessaggio('Errore di connessione al server! Riprova.', 'errore');
                 generaCaptcha();
+            } finally {
+                // Riabilita il bottone
+                isSubmitting = false;
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Riscatta Codice';
             }
         });
 
-        function mostraMessaggio(testo, tipo) {
-            divMessaggio.textContent = testo;
-            divMessaggio.className = 'messaggio ' + tipo;
-            divMessaggio.style.display = 'block';
-            
-            setTimeout(() => {
-                divMessaggio.style.display = 'none';
-            }, 5000);
-        }
+        // Focus sul primo campo all'avvio
+        window.addEventListener('load', function() {
+            inputIdInvoice.focus();
+        });
+
+        // Enter per spostarsi tra i campi
+        form.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                const inputs = Array.from(form.querySelectorAll('input'));
+                const currentIndex = inputs.indexOf(document.activeElement);
+                
+                if (currentIndex < inputs.length - 1) {
+                    inputs[currentIndex + 1].focus();
+                }
+            }
+        });
     </script>
 </body>
 </html>
