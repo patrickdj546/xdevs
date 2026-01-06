@@ -3,487 +3,352 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Verifica Codice</title>
-    <script src="https://www.google.com/recaptcha/api.js" async defer></script>
+    <title>Verifica Codice Boost - V-BOOST</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-        }
-
-        body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        
+        body {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: #fff;
             min-height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
             padding: 20px;
         }
-
+        
         .container {
-            background: white;
-            padding: 40px;
-            border-radius: 20px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
             max-width: 500px;
             width: 100%;
+            background: rgba(25, 25, 40, 0.9);
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.1);
         }
-
-        h1 {
+        
+        .logo {
             text-align: center;
-            color: #333;
             margin-bottom: 30px;
-            font-size: 28px;
         }
-
+        
+        .logo h1 {
+            color: #7289da;
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+        
+        .logo p {
+            color: #99aab5;
+            font-size: 1rem;
+        }
+        
         .form-group {
-            margin-bottom: 20px;
+            margin-bottom: 25px;
         }
-
+        
         label {
             display: block;
             margin-bottom: 8px;
-            color: #555;
+            color: #7289da;
             font-weight: 600;
+            font-size: 0.95rem;
         }
-
-        input[type="text"],
-        input[type="url"],
-        input[type="email"] {
+        
+        input {
             width: 100%;
             padding: 15px;
-            border: 2px solid #ddd;
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid rgba(114, 137, 218, 0.3);
             border-radius: 10px;
-            font-size: 16px;
-            transition: border-color 0.3s;
+            color: #fff;
+            font-size: 1rem;
+            transition: all 0.3s ease;
         }
-
-        input[type="text"] {
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-
-        input[type="text"]:focus,
-        input[type="url"]:focus,
-        input[type="email"]:focus {
+        
+        input:focus {
             outline: none;
-            border-color: #667eea;
+            border-color: #7289da;
+            box-shadow: 0 0 0 3px rgba(114, 137, 218, 0.2);
         }
-
-        .captcha-container {
-            margin: 20px 0;
-            display: flex;
-            justify-content: center;
+        
+        .btn {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, #7289da 0%, #5b6eae 100%);
+            border: none;
+            border-radius: 10px;
+            color: white;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 10px;
         }
-
-        .simple-captcha {
-            background: #f5f5f5;
+        
+        .btn:hover {
+            background: linear-gradient(135deg, #5b6eae 0%, #7289da 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(114, 137, 218, 0.4);
+        }
+        
+        .btn:active {
+            transform: translateY(0);
+        }
+        
+        .result {
+            margin-top: 25px;
             padding: 20px;
             border-radius: 10px;
             text-align: center;
-            border: 2px solid #ddd;
-        }
-
-        .captcha-question {
-            font-size: 18px;
-            font-weight: 600;
-            color: #333;
-            margin-bottom: 15px;
-        }
-
-        .captcha-input {
-            width: 100px;
-            padding: 10px;
-            text-align: center;
-            font-size: 20px;
-            border: 2px solid #667eea;
-            border-radius: 8px;
-        }
-
-        button {
-            width: 100%;
-            padding: 15px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border: none;
-            border-radius: 10px;
-            font-size: 18px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: transform 0.2s, box-shadow 0.2s;
-        }
-
-        button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.4);
-        }
-
-        button:active {
-            transform: translateY(0);
-        }
-
-        button:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
-            transform: none;
-        }
-
-        .messaggio {
-            margin-top: 20px;
-            padding: 15px;
-            border-radius: 10px;
-            text-align: center;
-            font-weight: 600;
             display: none;
+            animation: fadeIn 0.5s ease;
         }
-
-        .messaggio.successo {
-            background-color: #d4edda;
-            color: #155724;
-            border: 2px solid #c3e6cb;
+        
+        .success {
+            background: rgba(46, 204, 113, 0.1);
+            border: 2px solid #2ecc71;
+            color: #2ecc71;
         }
-
-        .messaggio.errore {
-            background-color: #f8d7da;
-            color: #721c24;
-            border: 2px solid #f5c6cb;
+        
+        .error {
+            background: rgba(231, 76, 60, 0.1);
+            border: 2px solid #e74c3c;
+            color: #e74c3c;
         }
-
-        .info {
-            margin-top: 20px;
-            padding: 15px;
-            background-color: #e7f3ff;
-            border-left: 4px solid #2196F3;
-            border-radius: 5px;
-            font-size: 14px;
-            color: #555;
+        
+        .info-box {
+            background: rgba(114, 137, 218, 0.1);
+            border: 2px solid rgba(114, 137, 218, 0.3);
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 25px;
         }
-
-        .discord-icon {
-            display: inline-block;
-            margin-right: 5px;
-        }
-
-        .admin-buttons {
-            margin-top: 20px;
+        
+        .info-box h3 {
+            color: #7289da;
+            margin-bottom: 10px;
             display: flex;
+            align-items: center;
             gap: 10px;
         }
-
-        .admin-buttons button {
-            flex: 1;
+        
+        .info-box ul {
+            list-style: none;
+            padding-left: 10px;
+        }
+        
+        .info-box li {
+            margin-bottom: 8px;
+            color: #99aab5;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .info-box li i {
+            color: #7289da;
+        }
+        
+        .note {
+            font-size: 0.9rem;
+            color: #99aab5;
+            text-align: center;
+            margin-top: 20px;
+            line-height: 1.5;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .loading {
+            display: none;
+            text-align: center;
+            margin: 20px 0;
+        }
+        
+        .spinner {
+            border: 4px solid rgba(255, 255, 255, 0.1);
+            border-left-color: #7289da;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .footer-links {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 25px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .footer-links a {
+            color: #7289da;
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: color 0.3s ease;
+        }
+        
+        .footer-links a:hover {
+            color: #5b6eae;
+            text-decoration: underline;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>🚀 Riscatta Boost! 🚀</h1>
+        <div class="logo">
+            <h1><i class="fas fa-rocket"></i> V-BOOST</h1>
+            <p>Sistema di Verifica Codici Discord Boost</p>
+        </div>
         
-        <form id="formCodice">
+        <div class="info-box">
+            <h3><i class="fas fa-info-circle"></i> Informazioni</h3>
+            <ul>
+                <li><i class="fas fa-check-circle"></i> Inserisci il codice ricevuto dopo l'acquisto</li>
+                <li><i class="fas fa-receipt"></i> Inserisci l'ID dell'ordine/invoice</li>
+                <li><i class="fab fa-discord"></i> Inserisci il link del server Discord</li>
+                <li><i class="fas fa-envelope"></i> Inserisci la tua email per le comunicazioni</li>
+            </ul>
+        </div>
+        
+        <form id="verificaForm">
             <div class="form-group">
-                <label for="idInvoice">🧾 ID Invoice/Ordine:</label>
-                <input 
-                    type="text" 
-                    id="idInvoice" 
-                    name="idInvoice" 
-                    placeholder="Es:(ded7d15ae20d7-0000009038297)"
-                    required
-                >
-            </div>
-
-            <div class="form-group">
-                <label for="codice">📝 Inserisci il tuo codice:</label>
-                <input 
-                    type="text" 
-                    id="codice" 
-                    name="codice" 
-                    placeholder="xx-XXXX-XXXX-XXXX-XXXX"
-                    maxlength="24"
-                    required
-                >
-            </div>
-
-            <div class="form-group">
-                <label for="linkDiscord">
-                    <span class="discord-icon">💬</span>
-                    Link Server Discord:
-                </label>
-                <input 
-                    type="url" 
-                    id="linkDiscord" 
-                    name="linkDiscord" 
-                    placeholder="https://discord.gg/tuoserver"
-                    required
-                >
-            </div>
-
-            <div class="form-group">
-                <label for="email">📧 La tua Email:</label>
-                <input 
-                    type="email" 
-                    id="email" 
-                    name="email" 
-                    placeholder="tuaemail@esempio.com"
-                    required
-                >
-            </div>
-
-            <div class="captcha-container">
-                <div class="simple-captcha">
-                    <div class="captcha-question" id="captchaQuestion"></div>
-                    <input 
-                        type="text" 
-                        id="captchaInput" 
-                        class="captcha-input" 
-                        placeholder="?" 
-                        maxlength="2"
-                        required
-                    >
-                </div>
+                <label for="codice"><i class="fas fa-key"></i> Codice Boost</label>
+                <input type="text" id="codice" name="codice" placeholder="Es: 14x-abcd-1234-efgh" required>
             </div>
             
-            <button type="submit" id="submitBtn">Riscatta Codice </button>
+            <div class="form-group">
+                <label for="idInvoice"><i class="fas fa-receipt"></i> ID Invoice/Ordine</label>
+                <input type="text" id="idInvoice" name="idInvoice" placeholder="Es: INV-123456" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="linkDiscord"><i class="fab fa-discord"></i> Link Server Discord</label>
+                <input type="text" id="linkDiscord" name="linkDiscord" placeholder="Es: https://discord.gg/xxxxx" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="email"><i class="fas fa-envelope"></i> Email</label>
+                <input type="email" id="email" name="email" placeholder="tua@email.com" required>
+            </div>
+            
+            <div class="loading" id="loading">
+                <div class="spinner"></div>
+                <p>Verifica in corso...</p>
+            </div>
+            
+            <button type="submit" class="btn" id="verificaBtn">
+                <i class="fas fa-check-circle"></i> Verifica Codice
+            </button>
         </form>
-
-        <div class="admin-buttons">
-            <button onclick="window.location.href='test.html'" style="background: linear-gradient(135deg, #28a745 0%, #20c997 100%);">
-                🧪 Testa Codice
-            </button>
-            <button onclick="window.location.href='admin.html'" style="background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);">
-                🔐 Login Admin
-            </button>
+        
+        <div class="result" id="result"></div>
+        
+        <div class="note">
+            <p><i class="fas fa-shield-alt"></i> Il tuo codice verrà verificato e attivato immediatamente sul server Discord specificato.</p>
+            <p>Riceverai una conferma via email entro 24 ore.</p>
         </div>
-
-        <div id="messaggio" class="messaggio"></div>
-
-        <div class="info">
-            <strong>📋 Istruzioni:</strong><br>
-            • Inserisci l'ID della tuo ordine Es: (ded7d15ae20d7-0000009038297)<br>
-            • Formato codice: xx-XXXX-XXXX-XXXX-XXXX<br>
-            • Inserisci il link del tuo server Discord<br>
-            • Inserisci la tua email<br>
-            • Risolvi il captcha matematico<br>
-            • Ogni codice può essere utilizzato una sola volta
+        
+        <div class="footer-links">
+            <a href="/test.html"><i class="fas fa-vial"></i> Test Codice</a>
+            <a href="/admin.html"><i class="fas fa-user-shield"></i> Admin</a>
+            <a href="/admin/stats"><i class="fas fa-chart-bar"></i> Statistiche</a>
         </div>
     </div>
-
+    
     <script>
-        const form = document.getElementById('formCodice');
-        const inputIdInvoice = document.getElementById('idInvoice');
-        const inputCodice = document.getElementById('codice');
-        const inputDiscord = document.getElementById('linkDiscord');
-        const inputEmail = document.getElementById('email');
-        const captchaQuestion = document.getElementById('captchaQuestion');
-        const captchaInput = document.getElementById('captchaInput');
-        const divMessaggio = document.getElementById('messaggio');
-        const submitBtn = document.getElementById('submitBtn');
-
-        let captchaAnswer;
-        let isSubmitting = false;
-
-        // Genera captcha matematico
-        function generaCaptcha() {
-            const num1 = Math.floor(Math.random() * 10) + 1;
-            const num2 = Math.floor(Math.random() * 10) + 1;
-            captchaAnswer = num1 + num2;
-            captchaQuestion.textContent = `Quanto fa ${num1} + ${num2}?`;
-            captchaInput.value = '';
-        }
-
-        // Genera captcha all'avvio
-        generaCaptcha();
-
-        // Formattazione automatica del codice intelligente
-        inputCodice.addEventListener('input', function(e) {
-            let value = e.target.value.replace(/[^A-Z0-9x-]/gi, '').toUpperCase();
-            
-            // Rimuovi tutti i trattini esistenti per ricostruire il formato
-            const cleanValue = value.replace(/-/g, '');
-            
-            // Determina il formato in base al prefisso
-            let formattedValue = '';
-            
-            if (cleanValue.length === 0) {
-                formattedValue = '';
-            } 
-            // Se inizia con 2x, 4x, 6x, 8x (formato con 5 gruppi)
-            else if (cleanValue.match(/^[2468]X/)) {
-                // Formato: 2X-XXXX-XXXX-XXXX-XXXX (lunghezza totale: 24 caratteri)
-                for (let i = 0; i < cleanValue.length && i < 19; i++) {
-                    formattedValue += cleanValue[i];
-                    // Aggiungi trattini dopo: 2, 7, 12, 17 (indici: 1, 6, 11, 16)
-                    if ((i === 1 || i === 6 || i === 11 || i === 16) && i < cleanValue.length - 1) {
-                        formattedValue += '-';
-                    }
-                }
-            }
-            // Se inizia con 10x, 12x, 14x (formato con 4 gruppi)
-            else if (cleanValue.match(/^(10|12|14)X/)) {
-                // Formato: 14X-XXXX-XXXX-XXXX (lunghezza totale: 19 caratteri)
-                for (let i = 0; i < cleanValue.length && i < 15; i++) {
-                    formattedValue += cleanValue[i];
-                    // Aggiungi trattini dopo: 3, 8, 13 (indici: 2, 7, 12)
-                    if ((i === 2 || i === 7 || i === 12) && i < cleanValue.length - 1) {
-                        formattedValue += '-';
-                    }
-                }
-            }
-            // Per qualsiasi altro formato, lascia che l'utente inserisca manualmente
-            else {
-                formattedValue = value;
-            }
-            
-            e.target.value = formattedValue;
-        });
-
-        // Helper per mostrare messaggi
-        function mostraMessaggio(testo, tipo) {
-            divMessaggio.textContent = testo;
-            divMessaggio.className = 'messaggio ' + tipo;
-            divMessaggio.style.display = 'block';
-            
-            setTimeout(() => {
-                divMessaggio.style.display = 'none';
-            }, 5000);
-        }
-
-        // Valida il formato del codice
-        function validaFormatoCodice(codice) {
-            // Rimuovi spazi e converte in maiuscolo
-            codice = codice.toUpperCase().trim();
-            
-            // Pattern per 2x, 4x, 6x, 8x (5 gruppi)
-            const pattern5Gruppi = /^[2468]X-[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}$/;
-            
-            // Pattern per 10x, 12x, 14x (4 gruppi)
-            const pattern4Gruppi = /^(10|12|14)X-[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}$/;
-            
-            return pattern5Gruppi.test(codice) || pattern4Gruppi.test(codice);
-        }
-
-        // Gestione del submit del form
-        form.addEventListener('submit', async function(e) {
+        document.getElementById('verificaForm').addEventListener('submit', async function(e) {
             e.preventDefault();
             
-            if (isSubmitting) return;
+            const form = e.target;
+            const btn = document.getElementById('verificaBtn');
+            const loading = document.getElementById('loading');
+            const resultDiv = document.getElementById('result');
             
-            const idInvoice = inputIdInvoice.value.trim();
-            let codice = inputCodice.value.trim();
-            const linkDiscord = inputDiscord.value.trim();
-            const email = inputEmail.value.trim();
-            const captchaUserAnswer = parseInt(captchaInput.value);
+            // Mostra loading
+            btn.disabled = true;
+            loading.style.display = 'block';
+            resultDiv.style.display = 'none';
             
-            // Verifica ID Invoice
-            if (idInvoice.length < 3) {
-                mostraMessaggio('Inserisci un ID Invoice valido!', 'errore');
-                inputIdInvoice.focus();
-                return;
-            }
-
-            // Verifica formato codice
-            if (!validaFormatoCodice(codice)) {
-                mostraMessaggio('Formato codice non valido! Usa: 2X-XXXX-XXXX-XXXX-XXXX o 14X-XXXX-XXXX-XXXX', 'errore');
-                inputCodice.focus();
-                return;
-            }
-
-            // Verifica link Discord
-            if (!linkDiscord.includes('discord.gg') && !linkDiscord.includes('discord.com/invite')) {
-                mostraMessaggio('Inserisci un link Discord valido!', 'errore');
-                inputDiscord.focus();
-                return;
-            }
-
-            // Verifica email
-            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-            if (!emailRegex.test(email)) {
-                mostraMessaggio('Inserisci un\'email valida!', 'errore');
-                inputEmail.focus();
-                return;
-            }
-
-            // Verifica captcha
-            if (isNaN(captchaUserAnswer) || captchaUserAnswer !== captchaAnswer) {
-                mostraMessaggio('Captcha errato! Riprova.', 'errore');
-                captchaInput.value = '';
-                captchaInput.focus();
-                generaCaptcha();
-                return;
-            }
-
-            // Disabilita il bottone durante l'invio
-            isSubmitting = true;
-            submitBtn.disabled = true;
-            submitBtn.textContent = 'Verifica in corso...';
-
+            // Raccogli dati
+            const formData = {
+                codice: document.getElementById('codice').value,
+                idInvoice: document.getElementById('idInvoice').value,
+                linkDiscord: document.getElementById('linkDiscord').value,
+                email: document.getElementById('email').value,
+                captchaToken: 'dummy-token' // Per compatibilità
+            };
+            
             try {
                 const response = await fetch('/verifica-codice', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
                     },
-                    body: JSON.stringify({ 
-                        idInvoice: idInvoice,
-                        codice: codice.toUpperCase(),
-                        linkDiscord: linkDiscord,
-                        email: email,
-                        captchaToken: 'verified'
-                    })
+                    body: JSON.stringify(formData)
                 });
-
+                
                 const data = await response.json();
-
+                
+                // Nascondi loading
+                loading.style.display = 'none';
+                btn.disabled = false;
+                
+                // Mostra risultato
+                resultDiv.className = 'result ' + (data.valido ? 'success' : 'error');
+                resultDiv.innerHTML = `
+                    <h3>${data.valido ? '✅ Successo!' : '❌ Errore!'}</h3>
+                    <p>${data.messaggio}</p>
+                    ${data.boostType ? `<p><strong>Tipo Boost:</strong> ${data.boostType}</p>` : ''}
+                `;
+                resultDiv.style.display = 'block';
+                
+                // Se successo, resetta il form
                 if (data.valido) {
-                    mostraMessaggio(data.messaggio, 'successo');
-                    
-                    // Mostra messaggio di conferma
-                    setTimeout(() => {
-                        const boostType = data.boostType || codice.split('-')[0] + ' Boost';
-                        const alertMessage = `✅ ${data.messaggio}\n\n🎁 **${boostType}** riscattato con successo!\n\n⏰ I boost arriveranno in automatico sul tuo server Discord entro 1-10 minuti.\n\n📧 Riceverai una conferma all'email: ${email}`;
-                        
-                        alert(alertMessage);
-                    }, 500);
-                    
-                    // Pulisci il form
-                    inputIdInvoice.value = '';
-                    inputCodice.value = '';
-                    inputDiscord.value = '';
-                    inputEmail.value = '';
-                    generaCaptcha();
-                    
-                } else {
-                    mostraMessaggio(data.messaggio, 'errore');
-                    generaCaptcha();
+                    form.reset();
                 }
+                
             } catch (error) {
                 console.error('Errore:', error);
-                mostraMessaggio('Errore di connessione al server! Riprova.', 'errore');
-                generaCaptcha();
-            } finally {
-                // Riabilita il bottone
-                isSubmitting = false;
-                submitBtn.disabled = false;
-                submitBtn.textContent = 'Riscatta Codice';
+                loading.style.display = 'none';
+                btn.disabled = false;
+                
+                resultDiv.className = 'result error';
+                resultDiv.innerHTML = `
+                    <h3>❌ Errore di Connessione</h3>
+                    <p>Impossibile connettersi al server. Riprova più tardi.</p>
+                `;
+                resultDiv.style.display = 'block';
             }
         });
-
-        // Focus sul primo campo all'avvio
-        window.addEventListener('load', function() {
-            inputIdInvoice.focus();
-        });
-
-        // Enter per spostarsi tra i campi
-        form.addEventListener('keydown', function(e) {
-            if (e.key === 'Enter') {
-                e.preventDefault();
-                const inputs = Array.from(form.querySelectorAll('input'));
-                const currentIndex = inputs.indexOf(document.activeElement);
-                
-                if (currentIndex < inputs.length - 1) {
-                    inputs[currentIndex + 1].focus();
-                }
+        
+        // Test rapido del server
+        window.addEventListener('load', async () => {
+            try {
+                const response = await fetch('/test-server');
+                const data = await response.json();
+                console.log('Server status:', data);
+            } catch (error) {
+                console.warn('Server non raggiungibile:', error);
             }
         });
     </script>

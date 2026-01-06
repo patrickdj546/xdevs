@@ -17,6 +17,12 @@ const DISCORD_WEBHOOK = 'https://discord.com/api/webhooks/1457755984393932863/v6
 // File JSON per il database dei codici
 const CODICI_FILE = 'codici.json';
 
+// Normalizza il codice (rimuove spazi, mette in lowercase)
+function normalizzaCodice(codice) {
+    if (!codice) return '';
+    return codice.toLowerCase().trim().replace(/\s+/g, '');
+}
+
 // Carica i codici dal file JSON
 function caricaCodiciDalFile() {
     try {
@@ -69,9 +75,26 @@ function salvaCodiciSuFile(dati) {
     }
 }
 
-// Funzione helper per normalizzare i codici
-function normalizzaCodice(codice) {
-    return codice.trim().toLowerCase();
+// Funzione per validare il formato del codice
+function validaFormatoCodice(codice) {
+    codice = normalizzaCodice(codice);
+    
+    // Pattern per nuovo formato: tipo-XXXX-XXXX-XXXX (es: 14x-abcd-1234-efgh)
+    const pattern = /^([0-9]+)x-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{4}$/;
+    
+    if (!pattern.test(codice)) {
+        return false;
+    }
+    
+    // Estrai il numero prima della x
+    const match = codice.match(/^([0-9]+)x/);
+    if (!match) return false;
+    
+    const numero = parseInt(match[1]);
+    // Controlla che sia uno dei tipi supportati
+    const tipiSupportati = [2, 4, 6, 8, 10, 12, 14];
+    
+    return tipiSupportati.includes(numero);
 }
 
 // Carica dati iniziali
@@ -129,7 +152,7 @@ async function inviaNotificaDiscord(codice, idInvoice, linkDiscord, email) {
                 },
                 {
                     name: "🎁 Tipo Boost",
-                    value: codice.split('-')[0] + ' Boost',
+                    value: codice.split('x')[0] + 'x Boost',
                     inline: false
                 }
             ],
@@ -158,10 +181,10 @@ async function inviaNotificaDiscord(codice, idInvoice, linkDiscord, email) {
 
 // Route per verificare il codice
 app.post('/verifica-codice', async (req, res) => {
-    let codiceInserito = req.body.codice.trim();
-    const idInvoice = req.body.idInvoice.trim();
-    const linkDiscord = req.body.linkDiscord.trim();
-    const email = req.body.email.trim();
+    let codiceInserito = req.body.codice;
+    const idInvoice = req.body.idInvoice;
+    const linkDiscord = req.body.linkDiscord;
+    const email = req.body.email;
     const captchaToken = req.body.captchaToken;
     
     // Verifica che tutti i campi siano compilati
@@ -172,9 +195,15 @@ app.post('/verifica-codice', async (req, res) => {
         });
     }
 
+    // Trim dei valori
+    codiceInserito = codiceInserito.trim();
+    const idInvoiceTrimmed = idInvoice.trim();
+    const linkDiscordTrimmed = linkDiscord.trim();
+    const emailTrimmed = email.trim();
+
     // Verifica formato email
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
+    if (!emailRegex.test(emailTrimmed)) {
         return res.json({ 
             valido: false, 
             messaggio: 'Email non valida!' 
@@ -183,7 +212,7 @@ app.post('/verifica-codice', async (req, res) => {
 
     // Verifica formato link Discord
     const discordRegex = /discord\.(gg|com\/invite)\//i;
-    if (!discordRegex.test(linkDiscord)) {
+    if (!discordRegex.test(linkDiscordTrimmed)) {
         return res.json({ 
             valido: false, 
             messaggio: 'Link Discord non valido!' 
@@ -191,31 +220,39 @@ app.post('/verifica-codice', async (req, res) => {
     }
     
     // Normalizza il codice
-    codiceInserito = normalizzaCodice(codiceInserito);
+    const codiceNormalized = normalizzaCodice(codiceInserito);
+    
+    // Verifica formato codice
+    if (!validaFormatoCodice(codiceNormalized)) {
+        return res.json({ 
+            valido: false, 
+            messaggio: '❌ Formato codice non valido! Usa formato: 2x-abcd-1234-efgh' 
+        });
+    }
     
     // Controlla se il codice è valido
-    if (codiciValidi.includes(codiceInserito)) {
+    if (codiciValidi.includes(codiceNormalized)) {
         // Controlla se il codice è già stato usato
-        if (codiciUsati.has(codiceInserito)) {
+        if (codiciUsati.has(codiceNormalized)) {
             return res.json({ 
                 valido: false, 
                 messaggio: 'Codice già utilizzato!' 
             });
         } else {
             // Aggiungi il codice ai codici usati
-            codiciUsati.add(codiceInserito);
+            codiciUsati.add(codiceNormalized);
             
             // Aggiorna database
             database.codiciUsati = Array.from(codiciUsati);
             salvaCodiciSuFile(database);
             
             // Invia notifica su Discord
-            const notificaInviata = await inviaNotificaDiscord(codiceInserito, idInvoice, linkDiscord, email);
+            const notificaInviata = await inviaNotificaDiscord(codiceNormalized, idInvoiceTrimmed, linkDiscordTrimmed, emailTrimmed);
             
             return res.json({ 
                 valido: true, 
                 messaggio: '✅ Codice valido! Il riscatto è stato processato.',
-                boostType: codiceInserito.split('-')[0] + ' Boost',
+                boostType: codiceNormalized.split('x')[0] + 'x Boost',
                 notificaInviata: notificaInviata
             });
         }
@@ -262,7 +299,8 @@ app.get('/admin/codici', verificaAdmin, (req, res) => {
 
     // Organizza i codici per categoria
     codiciValidi.forEach(codice => {
-        const categoria = codice.split('-')[0].toLowerCase();
+        // Estrai la categoria dal codice (es: "2x" da "2x-abcd-1234-efgh")
+        const categoria = codice.split('x')[0] + 'x';
         if (codiciPerCategoria[categoria]) {
             codiciPerCategoria[categoria].push({
                 codice: codice,
@@ -292,6 +330,14 @@ app.post('/admin/codici/aggiungi', verificaAdmin, (req, res) => {
 
     const codiceNormalized = normalizzaCodice(codice);
     
+    // Verifica formato
+    if (!validaFormatoCodice(codiceNormalized)) {
+        return res.json({ 
+            successo: false, 
+            messaggio: 'Formato codice non valido! Usa formato: 2x-abcd-1234-efgh' 
+        });
+    }
+    
     if (codiciValidi.includes(codiceNormalized)) {
         return res.json({ successo: false, messaggio: 'Codice già esistente!' });
     }
@@ -317,9 +363,19 @@ app.post('/admin/codici/aggiungi-multi', verificaAdmin, (req, res) => {
 
     const nuoviCodici = [];
     const duplicati = [];
+    const invalidi = [];
     
     codici.forEach(codice => {
+        if (typeof codice !== 'string') return;
+        
         const codiceNormalized = normalizzaCodice(codice);
+        
+        // Verifica formato
+        if (!validaFormatoCodice(codiceNormalized)) {
+            invalidi.push(codice);
+            return;
+        }
+        
         if (!codiciValidi.includes(codiceNormalized)) {
             codiciValidi.push(codiceNormalized);
             nuoviCodici.push(codiceNormalized);
@@ -336,9 +392,12 @@ app.post('/admin/codici/aggiungi-multi', verificaAdmin, (req, res) => {
     res.json({ 
         successo: true, 
         messaggio: `Operazione completata!`,
-        aggiunti: nuoviCodici.length,
-        duplicati: duplicati.length,
-        totaleCodici: codiciValidi.length
+        dettagli: {
+            aggiunti: nuoviCodici.length,
+            duplicati: duplicati.length,
+            invalidi: invalidi.length,
+            totaleCodici: codiciValidi.length
+        }
     });
 });
 
@@ -352,6 +411,14 @@ app.post('/admin/codici/modifica', verificaAdmin, (req, res) => {
 
     const vecchioNormalized = normalizzaCodice(vecchioCodice);
     const nuovoNormalized = normalizzaCodice(nuovoCodice);
+    
+    // Verifica formato nuovo codice
+    if (!validaFormatoCodice(nuovoNormalized)) {
+        return res.json({ 
+            successo: false, 
+            messaggio: 'Formato nuovo codice non valido! Usa formato: 2x-abcd-1234-efgh' 
+        });
+    }
     
     const index = codiciValidi.indexOf(vecchioNormalized);
     if (index === -1) {
@@ -409,6 +476,15 @@ app.post('/admin/codici/elimina', verificaAdmin, (req, res) => {
 
 // Elimina TUTTI i codici
 app.post('/admin/codici/elimina-tutti', verificaAdmin, (req, res) => {
+    const conferma = req.body.conferma;
+    
+    if (conferma !== 'CONFERMA') {
+        return res.json({ 
+            successo: false, 
+            messaggio: 'Richiesta conferma! Invia CONFERMA nel campo conferma' 
+        });
+    }
+    
     codiciValidi = [];
     codiciUsati.clear();
     
@@ -424,6 +500,15 @@ app.post('/admin/codici/elimina-tutti', verificaAdmin, (req, res) => {
 
 // Route per resettare i codici usati
 app.post('/admin/reset-codici', verificaAdmin, (req, res) => {
+    const conferma = req.body.conferma;
+    
+    if (conferma !== 'RESET') {
+        return res.json({ 
+            successo: false, 
+            messaggio: 'Richiesta conferma! Invia RESET nel campo conferma' 
+        });
+    }
+    
     codiciUsati.clear();
     database.codiciUsati = [];
     salvaCodiciSuFile(database);
@@ -461,15 +546,25 @@ app.post('/admin/codici/carica', verificaAdmin, (req, res) => {
         codiciUsati = new Set();
         
         datiCaricati.codici.forEach(codice => {
+            if (typeof codice !== 'string') return;
+            
             const codiceNormalized = normalizzaCodice(codice);
-            if (!codiciValidi.includes(codiceNormalized)) {
-                codiciValidi.push(codiceNormalized);
+            // Verifica formato
+            if (validaFormatoCodice(codiceNormalized)) {
+                if (!codiciValidi.includes(codiceNormalized)) {
+                    codiciValidi.push(codiceNormalized);
+                }
             }
         });
 
         if (Array.isArray(datiCaricati.codiciUsati)) {
             datiCaricati.codiciUsati.forEach(codice => {
-                codiciUsati.add(normalizzaCodice(codice));
+                if (typeof codice !== 'string') return;
+                
+                const codiceNormalized = normalizzaCodice(codice);
+                if (validaFormatoCodice(codiceNormalized) && codiciValidi.includes(codiceNormalized)) {
+                    codiciUsati.add(codiceNormalized);
+                }
             });
         }
 
@@ -493,8 +588,7 @@ app.get('/admin/stats', (req, res) => {
     res.json({
         totaliCodici: codiciValidi.length,
         codiciUsati: codiciUsati.size,
-        codiciDisponibili: codiciValidi.length - codiciUsati.size,
-        listaUsati: Array.from(codiciUsati)
+        codiciDisponibili: codiciValidi.length - codiciUsati.size
     });
 });
 
@@ -519,6 +613,16 @@ app.post('/test-codice', (req, res) => {
     }
 
     const codiceNormalized = normalizzaCodice(codice);
+    
+    // Verifica formato
+    if (!validaFormatoCodice(codiceNormalized)) {
+        return res.json({ 
+            successo: false, 
+            messaggio: 'Formato codice non valido! Usa formato: 2x-abcd-1234-efgh',
+            disponibile: false
+        });
+    }
+    
     const codiceEsiste = codiciValidi.includes(codiceNormalized);
     
     res.json({
@@ -527,7 +631,7 @@ app.post('/test-codice', (req, res) => {
         messaggio: codiceEsiste ? 
             (codiciUsati.has(codiceNormalized) ? 'Codice già utilizzato!' : 'Codice valido!') : 
             'Codice non trovato!',
-        tipo: codiceEsiste ? codiceNormalized.split('-')[0] + ' Boost' : null
+        tipo: codiceEsiste ? codiceNormalized.split('x')[0] + 'x Boost' : null
     });
 });
 
@@ -583,8 +687,6 @@ app.listen(PORT, () => {
     console.log(`🔑 Password admin: ${ADMIN_PASSWORD}`);
     console.log(`📊 Dashboard admin: http://localhost:${PORT}/admin.html`);
     console.log(`🧪 Test server: http://localhost:${PORT}/test-server`);
-    console.log(`📝 File database: ${CODICI_FILE}`);
     console.log(`💾 Codici caricati: ${codiciValidi.length}`);
-    console.log(`🎮 Categorie: 2x, 4x, 6x, 8x, 10x, 12x, 14x`);
     console.log(`⏰ Ultimo aggiornamento: ${database.ultimoAggiornamento || 'Mai'}`);
 });

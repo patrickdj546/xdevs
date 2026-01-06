@@ -3,868 +3,1160 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Panel</title>
+    <title>Admin Panel - V-BOOST</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-        }
-
-        body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            padding: 20px;
         }
-
+        
+        body {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: #fff;
+            min-height: 100vh;
+        }
+        
         .container {
             max-width: 1200px;
             margin: 0 auto;
+            padding: 20px;
         }
-
-        .login-box {
-            background: white;
-            padding: 40px;
-            border-radius: 20px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-            max-width: 400px;
-            margin: 100px auto;
-        }
-
-        .dashboard {
-            display: none;
-        }
-
-        h1 {
-            text-align: center;
-            color: #333;
+        
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
             margin-bottom: 30px;
         }
-
+        
+        .logo h1 {
+            color: #7289da;
+            font-size: 2rem;
+        }
+        
+        .logo p {
+            color: #99aab5;
+            font-size: 0.9rem;
+        }
+        
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .logout-btn {
+            padding: 8px 16px;
+            background: rgba(231, 76, 60, 0.2);
+            border: 1px solid #e74c3c;
+            border-radius: 5px;
+            color: #e74c3c;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .logout-btn:hover {
+            background: #e74c3c;
+            color: white;
+        }
+        
+        .admin-nav {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+        
+        .nav-btn {
+            padding: 12px 24px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            color: #7289da;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .nav-btn.active {
+            background: rgba(114, 137, 218, 0.2);
+            border-color: #7289da;
+        }
+        
+        .nav-btn:hover:not(.active) {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+        
+        .content-section {
+            display: none;
+            background: rgba(25, 25, 40, 0.9);
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .content-section.active {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+        
+        .section-title {
+            color: #7289da;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid rgba(114, 137, 218, 0.3);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
         .form-group {
             margin-bottom: 20px;
         }
-
+        
         label {
             display: block;
             margin-bottom: 8px;
-            color: #555;
+            color: #7289da;
             font-weight: 600;
         }
-
-        input[type="email"],
-        input[type="password"],
-        input[type="text"],
-        input[type="file"],
+        
+        input, textarea, select {
+            width: 100%;
+            padding: 12px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid rgba(114, 137, 218, 0.3);
+            border-radius: 8px;
+            color: #fff;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+        
         textarea {
-            width: 100%;
-            padding: 15px;
-            border: 2px solid #ddd;
-            border-radius: 10px;
-            font-size: 16px;
-            transition: border-color 0.3s;
+            min-height: 120px;
+            resize: vertical;
         }
-
-        input:focus,
-        textarea:focus {
+        
+        input:focus, textarea:focus, select:focus {
             outline: none;
-            border-color: #667eea;
+            border-color: #7289da;
+            box-shadow: 0 0 0 3px rgba(114, 137, 218, 0.2);
         }
-
-        button {
-            width: 100%;
-            padding: 15px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
+        
+        .btn {
+            padding: 12px 24px;
+            background: linear-gradient(135deg, #7289da 0%, #5b6eae 100%);
             border: none;
-            border-radius: 10px;
-            font-size: 18px;
+            border-radius: 8px;
+            color: white;
+            font-size: 1rem;
             font-weight: 600;
             cursor: pointer;
-            transition: transform 0.2s;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
         }
-
-        button:hover {
+        
+        .btn:hover {
+            background: linear-gradient(135deg, #5b6eae 0%, #7289da 100%);
             transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(114, 137, 218, 0.4);
         }
-
-        .stats {
+        
+        .btn-danger {
+            background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+        }
+        
+        .btn-danger:hover {
+            background: linear-gradient(135deg, #c0392b 0%, #e74c3c 100%);
+        }
+        
+        .btn-success {
+            background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%);
+        }
+        
+        .btn-success:hover {
+            background: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%);
+        }
+        
+        .message {
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+        
+        .message.success {
+            background: rgba(46, 204, 113, 0.1);
+            border: 2px solid #2ecc71;
+            color: #2ecc71;
+        }
+        
+        .message.error {
+            background: rgba(231, 76, 60, 0.1);
+            border: 2px solid #e74c3c;
+            color: #e74c3c;
+        }
+        
+        .message.warning {
+            background: rgba(241, 196, 15, 0.1);
+            border: 2px solid #f1c40f;
+            color: #f1c40f;
+        }
+        
+        .codici-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        .categoria-box {
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 10px;
+            padding: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .categoria-title {
+            color: #7289da;
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .codice-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 5px;
+            margin-bottom: 8px;
+        }
+        
+        .codice-item.usato {
+            opacity: 0.7;
+            text-decoration: line-through;
+        }
+        
+        .codice-text {
+            font-family: monospace;
+            font-size: 0.9rem;
+        }
+        
+        .codice-stato {
+            font-size: 0.8rem;
+            padding: 2px 8px;
+            border-radius: 10px;
+        }
+        
+        .stato-disponibile {
+            background: rgba(46, 204, 113, 0.2);
+            color: #2ecc71;
+        }
+        
+        .stato-usato {
+            background: rgba(231, 76, 60, 0.2);
+            color: #e74c3c;
+        }
+        
+        .stats-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
             gap: 20px;
+            margin: 20px 0;
+        }
+        
+        .stat-card {
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 10px;
+            padding: 25px;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #7289da;
+            display: block;
+        }
+        
+        .stat-label {
+            font-size: 1rem;
+            color: #99aab5;
+            margin-top: 10px;
+        }
+        
+        .login-section {
+            max-width: 400px;
+            margin: 100px auto;
+            background: rgba(25, 25, 40, 0.9);
+            border-radius: 15px;
+            padding: 40px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            text-align: center;
+        }
+        
+        .login-section h2 {
+            color: #7289da;
             margin-bottom: 30px;
         }
-
-        .stat-card {
-            background: white;
-            padding: 20px;
-            border-radius: 15px;
-            text-align: center;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
-
-        .stat-number {
-            font-size: 36px;
-            font-weight: bold;
-            color: #667eea;
-        }
-
-        .stat-label {
-            color: #666;
-            margin-top: 5px;
-        }
-
-        .category {
-            background: white;
-            padding: 20px;
-            border-radius: 15px;
-            margin-bottom: 20px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-        }
-
-        .category-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 15px;
-            padding-bottom: 10px;
-            border-bottom: 2px solid #eee;
-        }
-
-        .category-title {
-            font-size: 24px;
-            font-weight: bold;
-            color: #333;
-        }
-
-        .badge {
-            padding: 5px 15px;
-            border-radius: 20px;
-            font-size: 14px;
-            font-weight: 600;
-        }
-
-        .badge-2x { background: #6c757d; color: white; }
-        .badge-4x { background: #007bff; color: white; }
-        .badge-6x { background: #17a2b8; color: white; }
-        .badge-8x { background: #28a745; color: white; }
-        .badge-10x { background: #ffc107; color: #333; }
-        .badge-12x { background: #fd7e14; color: white; }
-        .badge-14x { background: #dc3545; color: white; }
-
-        .code-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 15px;
-            margin-bottom: 10px;
-            background: #f8f9fa;
-            border-radius: 10px;
-            border-left: 4px solid #667eea;
-        }
-
-        .code-item.used {
-            opacity: 0.5;
-            border-left-color: #dc3545;
-        }
-
-        .code-text {
-            font-family: monospace;
-            font-size: 16px;
-            font-weight: bold;
-        }
-
-        .code-status {
-            padding: 3px 10px;
-            border-radius: 5px;
-            font-size: 12px;
-            font-weight: 600;
-        }
-
-        .status-disponibile {
-            background: #d4edda;
-            color: #155724;
-        }
-
-        .status-usato {
-            background: #f8d7da;
-            color: #721c24;
-        }
-
-        .btn-modifica {
-            padding: 8px 15px;
-            background: #ffc107;
-            color: #333;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-weight: 600;
-            margin-left: 10px;
-        }
-
-        .btn-elimina {
-            padding: 8px 15px;
-            background: #dc3545;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-weight: 600;
-            margin-left: 5px;
-        }
-
-        .actions {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 20px;
-        }
-
-        .actions button {
-            flex: 1;
-        }
-
-        .btn-success { background: linear-gradient(135deg, #28a745 0%, #20c997 100%); }
-        .btn-danger { background: linear-gradient(135deg, #dc3545 0%, #c82333 100%); }
-        .btn-warning { background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%); }
-        .btn-secondary { background: linear-gradient(135deg, #6c757d 0%, #5a6268 100%); }
-
-        .btn-info { 
-        background: linear-gradient(135deg, #17a2b8 0%, #138496 100%); 
-        color: white;
-        }
-
-        /* Aggiungi dopo le definizioni .btn-info */
-        .btn-info:hover {
-            background: linear-gradient(135deg, #138496 0%, #117a8b 100%);
-            transform: translateY(-2px);
-        }
-
-        .messaggio {
-            padding: 15px;
-            border-radius: 10px;
-            margin-bottom: 20px;
-            text-align: center;
-            font-weight: 600;
+        
+        .loading {
             display: none;
+            text-align: center;
+            margin: 20px 0;
         }
-
-        .messaggio.successo {
-            background-color: #d4edda;
-            color: #155724;
+        
+        .spinner {
+            border: 4px solid rgba(255, 255, 255, 0.1);
+            border-left-color: #7289da;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
         }
-
-        .messaggio.errore {
-            background-color: #f8d7da;
-            color: #721c24;
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
-
-        .modal {
-            display: none;
-            position: fixed;
+        
+        .file-input-container {
+            position: relative;
+            overflow: hidden;
+            margin: 20px 0;
+        }
+        
+        .file-input {
+            position: absolute;
             top: 0;
             left: 0;
+            opacity: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0,0,0,0.5);
-            z-index: 1000;
-        }
-
-        .modal-content {
-            background: white;
-            max-width: 500px;
-            margin: 100px auto;
-            padding: 30px;
-            border-radius: 15px;
-        }
-
-        .modal-buttons {
-            display: flex;
-            gap: 10px;
-            margin-top: 20px;
-        }
-
-        .metodo-aggiunta {
-            display: none;
-            margin-top: 20px;
-            padding: 20px;
-            background: #f8f9fa;
-            border-radius: 10px;
-            border-left: 4px solid #667eea;
-        }
-
-        .scelta-metodo {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 20px;
-        }
-
-        .btn-metodo {
-            flex: 1;
-            padding: 12px;
-            background: #e9ecef;
-            color: #495057;
-            border: 2px solid transparent;
-            border-radius: 8px;
-            font-weight: 600;
             cursor: pointer;
-            transition: all 0.3s;
         }
-
-        .btn-metodo:hover {
-            background: #dee2e6;
-        }
-
-        .btn-metodo.active {
-            background: #667eea;
-            color: white;
-            border-color: #764ba2;
-        }
-
-        .info-box {
-            background: #e7f3ff;
+        
+        .file-label {
+            display: block;
             padding: 15px;
-            border-radius: 10px;
-            margin-top: 15px;
-            border-left: 4px solid #007bff;
+            background: rgba(114, 137, 218, 0.1);
+            border: 2px dashed #7289da;
+            border-radius: 8px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
         }
-
-        .info-box p {
-            margin: 5px 0;
-            font-size: 14px;
-            color: #004085;
+        
+        .file-label:hover {
+            background: rgba(114, 137, 218, 0.2);
         }
-
-        textarea {
-            font-family: monospace;
-            resize: vertical;
-            min-height: 150px;
+        
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        
+        .action-btn {
+            padding: 6px 12px;
+            font-size: 0.8rem;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .edit-btn {
+            background: rgba(52, 152, 219, 0.2);
+            border: 1px solid #3498db;
+            color: #3498db;
+        }
+        
+        .delete-btn {
+            background: rgba(231, 76, 60, 0.2);
+            border: 1px solid #e74c3c;
+            color: #e74c3c;
+        }
+        
+        .edit-btn:hover {
+            background: #3498db;
+            color: white;
+        }
+        
+        .delete-btn:hover {
+            background: #e74c3c;
+            color: white;
         }
     </style>
 </head>
 <body>
-    <!-- Login Box -->
-    <div class="login-box" id="loginBox">
-        <h1>🔐 Admin Login</h1>
-        <form id="loginForm">
-            <div class="form-group">
-                <label for="email">📧 Email:</label>
-                <input type="email" id="email" required>
-            </div>
-            <div class="form-group">
-                <label for="password">🔑 Password:</label>
-                <input type="password" id="password" required>
-            </div>
-            <button type="submit">Accedi</button>
-        </form>
-        <div id="loginMessage" class="messaggio"></div>
-        <button onclick="window.location.href='index.html'" style="margin-top: 15px; background: linear-gradient(135deg, #6c757d 0%, #5a6268 100%);">
-            ← Torna alla Home
+    <!-- Login Section -->
+    <div id="loginSection" class="login-section">
+        <h2><i class="fas fa-user-shield"></i> Admin Login</h2>
+        <div class="form-group">
+            <label for="loginEmail">Email</label>
+            <input type="email" id="loginEmail" placeholder="admin@example.com">
+        </div>
+        <div class="form-group">
+            <label for="loginPassword">Password</label>
+            <input type="password" id="loginPassword" placeholder="********">
+        </div>
+        <button class="btn" id="loginBtn">
+            <i class="fas fa-sign-in-alt"></i> Accedi
         </button>
+        <div id="loginMessage" class="message"></div>
     </div>
-
-    <!-- Dashboard -->
-    <div class="container dashboard" id="dashboard">
-        <h1 style="color: white; text-align: center; margin-bottom: 30px;">📊 Pannello Admin - Gestione Codici</h1>
+    
+    <!-- Admin Panel (hidden until login) -->
+    <div id="adminPanel" class="container" style="display: none;">
+        <header>
+            <div class="logo">
+                <h1><i class="fas fa-user-shield"></i> Admin Panel - V-BOOST</h1>
+                <p>Gestione Sistema Codici</p>
+            </div>
+            <div class="user-info">
+                <span id="adminEmail"></span>
+                <button class="logout-btn" id="logoutBtn">
+                    <i class="fas fa-sign-out-alt"></i> Logout
+                </button>
+            </div>
+        </header>
         
-        <div id="dashboardMessage" class="messaggio"></div>
-
-        <!-- Statistiche -->
-        <div class="stats">
-            <div class="stat-card">
-                <div class="stat-number" id="statTotale">0</div>
-                <div class="stat-label">Codici Totali</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-number" id="statUsati">0</div>
-                <div class="stat-label">Codici Usati</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-number" id="statDisponibili">0</div>
-                <div class="stat-label">Codici Disponibili</div>
-            </div>
+        <div class="admin-nav">
+            <button class="nav-btn active" data-section="dashboard">
+                <i class="fas fa-tachometer-alt"></i> Dashboard
+            </button>
+            <button class="nav-btn" data-section="gestione">
+                <i class="fas fa-key"></i> Gestione Codici
+            </button>
+            <button class="nav-btn" data-section="aggiungi">
+                <i class="fas fa-plus-circle"></i> Aggiungi Codici
+            </button>
+            <button class="nav-btn" data-section="statistiche">
+                <i class="fas fa-chart-bar"></i> Statistiche
+            </button>
+            <button class="nav-btn" data-section="backup">
+                <i class="fas fa-database"></i> Backup & Restore
+            </button>
+            <button class="nav-btn" data-section="operazioni">
+                <i class="fas fa-cogs"></i> Operazioni Avanzate
+            </button>
         </div>
-
-    <!-- Sostituisci la sezione "Azioni" esistente con questa: -->
-    <div class="actions">
-    <button class="btn-success" onclick="mostraModalAggiungi()">➕ Aggiungi Codici</button>
-    <button class="btn-danger" onclick="resetCodici()">🔄 Reset Codici Usati</button>
-    <button class="btn-warning" onclick="eliminaTuttiCodici()">🗑️ Cancella Tutti i Codici</button>
-    <button class="btn-info" onclick="scaricaBackup()">💾 Scarica Backup</button>
-    <button class="btn-secondary" onclick="mostraCaricaBackup()">📂 Carica Backup</button>
-    <button class="btn-secondary" onclick="logout()">🚪 Logout</button>
-    </div>
-
-        <!-- Categorie Codici -->
-        <div id="categorieContainer"></div>
-    </div>
-
-    <!-- Modal Aggiungi/Modifica -->
-    <div class="modal" id="modalCodice">
-        <div class="modal-content">
-            <h2 id="modalTitolo">Aggiungi Codice</h2>
+        
+        <!-- Dashboard Section -->
+        <div id="dashboardSection" class="content-section active">
+            <h2 class="section-title"><i class="fas fa-tachometer-alt"></i> Dashboard</h2>
+            <div id="dashboardStats" class="stats-grid">
+                <!-- Le statistiche verranno caricate qui -->
+            </div>
+            <div id="dashboardMessage" class="message"></div>
+        </div>
+        
+        <!-- Gestione Codici Section -->
+        <div id="gestioneSection" class="content-section">
+            <h2 class="section-title"><i class="fas fa-key"></i> Gestione Codici</h2>
+            <div class="loading" id="loadingCodici">
+                <div class="spinner"></div>
+                <p>Caricamento codici...</p>
+            </div>
+            <div id="codiciList"></div>
+            <div id="gestioneMessage" class="message"></div>
+        </div>
+        
+        <!-- Aggiungi Codici Section -->
+        <div id="aggiungiSection" class="content-section">
+            <h2 class="section-title"><i class="fas fa-plus-circle"></i> Aggiungi Codici</h2>
+            <div class="form-group">
+                <label><i class="fas fa-key"></i> Aggiungi Singolo Codice</label>
+                <input type="text" id="singoloCodice" placeholder="Es: 14x-abcd-1234-efgh">
+                <button class="btn" id="aggiungiSingoloBtn" style="margin-top: 10px;">
+                    <i class="fas fa-plus"></i> Aggiungi Codice
+                </button>
+            </div>
             
-            <div class="scelta-metodo">
-                <button type="button" class="btn-metodo active" onclick="cambiaMetodo('singolo')">
-                    📝 Inserisci Singolo
+            <div class="form-group">
+                <label><i class="fas fa-list"></i> Aggiungi Multipli Codici (uno per riga)</label>
+                <textarea id="multipliCodici" placeholder="Incolla qui i codici, uno per riga"></textarea>
+                <button class="btn" id="aggiungiMultipliBtn" style="margin-top: 10px;">
+                    <i class="fas fa-layer-group"></i> Aggiungi Tutti i Codici
                 </button>
-                <button type="button" class="btn-metodo" onclick="cambiaMetodo('file')">
-                    📄 Carica File
+            </div>
+            
+            <div id="aggiungiMessage" class="message"></div>
+        </div>
+        
+        <!-- Statistiche Section -->
+        <div id="statisticheSection" class="content-section">
+            <h2 class="section-title"><i class="fas fa-chart-bar"></i> Statistiche Dettagliate</h2>
+            <div class="loading" id="loadingStats">
+                <div class="spinner"></div>
+                <p>Caricamento statistiche...</p>
+            </div>
+            <div id="statisticheContent"></div>
+            <div id="statisticheMessage" class="message"></div>
+        </div>
+        
+        <!-- Backup & Restore Section -->
+        <div id="backupSection" class="content-section">
+            <h2 class="section-title"><i class="fas fa-database"></i> Backup & Restore</h2>
+            <div class="form-group">
+                <button class="btn" id="downloadBackupBtn">
+                    <i class="fas fa-download"></i> Scarica Backup JSON
                 </button>
             </div>
-
-            <!-- Metodo Singolo Codice -->
-            <div id="metodoSingolo" class="metodo-aggiunta" style="display: block;">
-                <div class="form-group">
-                    <label>Codice:</label>
-                    <input type="text" id="modalInputCodice" placeholder="14x-XXXX-XXXX-XXXX-XXXX">
+            
+            <div class="form-group">
+                <label><i class="fas fa-upload"></i> Carica Backup da File JSON</label>
+                <div class="file-input-container">
+                    <input type="file" id="backupFile" class="file-input" accept=".json">
+                    <label for="backupFile" class="file-label">
+                        <i class="fas fa-file-upload"></i> Clicca per selezionare un file JSON
+                    </label>
                 </div>
-                <div class="info-box">
-                    <p><strong>Formato:</strong> [tipo] - [codice] (es: 14x-ABCD-1234-EFGH-5678)</p>
-                    <p><strong>Tipi supportati:</strong> 14x, 12x, 10x, 8x, 6x, 4x, 2x</p>
-                </div>
+                <textarea id="backupContent" placeholder="Oppure incolla qui il contenuto JSON..."></textarea>
+                <button class="btn" id="caricaBackupBtn" style="margin-top: 10px;">
+                    <i class="fas fa-upload"></i> Carica Backup
+                </button>
             </div>
-
-            <!-- Metodo Caricamento File -->
-            <div id="metodoFile" class="metodo-aggiunta">
-                <div class="form-group">
-                    <label>Seleziona File:</label>
-                    <input type="file" id="fileCodici" accept=".txt,.csv">
-                </div>
-                <div class="form-group">
-                    <label>Oppure incolla i codici qui:</label>
-                    <textarea id="textareaCodici" placeholder="Incolla i codici qui, uno per riga...
-Esempio:
-14x-ABCD-1234-EFGH-5678
-12x-WXYZ-9876-PQRS-4321
-10x-MNOP-2468-HIJK-1357"></textarea>
-                </div>
-                <div class="info-box">
-                    <p><strong>Formato file:</strong> File di testo (.txt) con un codice per riga</p>
-                    <p><strong>Formato codici:</strong> [tipo] - [codice] (es: 14x-ABCD-1234-EFGH-5678)</p>
-                    <p><strong>Nota:</strong> I codici duplicati verranno ignorati automaticamente</p>
-                </div>
+            
+            <div id="backupMessage" class="message"></div>
+        </div>
+        
+        <!-- Operazioni Avanzate Section -->
+        <div id="operazioniSection" class="content-section">
+            <h2 class="section-title"><i class="fas fa-cogs"></i> Operazioni Avanzate</h2>
+            
+            <div class="form-group">
+                <label><i class="fas fa-undo"></i> Reset Codici Usati</label>
+                <p style="color: #99aab5; margin-bottom: 10px;">Rendi nuovamente disponibili tutti i codici già utilizzati.</p>
+                <input type="text" id="resetConferma" placeholder="Scrivi RESET per confermare">
+                <button class="btn btn-success" id="resetCodiciBtn" style="margin-top: 10px;">
+                    <i class="fas fa-undo"></i> Reset Codici Usati
+                </button>
             </div>
-
-            <div class="modal-buttons">
-                <button class="btn-success" onclick="salvaCodice()">Salva</button>
-                <button class="btn-secondary" onclick="chiudiModal()">Annulla</button>
+            
+            <div class="form-group">
+                <label><i class="fas fa-trash-alt"></i> Elimina Tutti i Codici</label>
+                <p style="color: #99aab5; margin-bottom: 10px;">ATTENZIONE: Questa operazione cancella TUTTI i codici.</p>
+                <input type="text" id="eliminaConferma" placeholder="Scrivi CONFERMA per procedere">
+                <button class="btn btn-danger" id="eliminaTuttiBtn" style="margin-top: 10px;">
+                    <i class="fas fa-trash-alt"></i> Elimina Tutti i Codici
+                </button>
             </div>
+            
+            <div id="operazioniMessage" class="message"></div>
         </div>
     </div>
-
+    
     <script>
-        let adminToken = null;
-        let codiceInModifica = null;
-        let metodoAttuale = 'singolo';
-
+        let adminToken = localStorage.getItem('adminToken');
+        
+        // Controlla se l'utente è già loggato
+        if (adminToken) {
+            showAdminPanel();
+        } else {
+            document.getElementById('loginSection').style.display = 'block';
+        }
+        
         // Login
-        document.getElementById('loginForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const email = document.getElementById('email').value;
-            const password = document.getElementById('password').value;
-
+        document.getElementById('loginBtn').addEventListener('click', async function() {
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+            const messageDiv = document.getElementById('loginMessage');
+            
+            if (!email || !password) {
+                showMessage(messageDiv, 'Compila tutti i campi!', 'error');
+                return;
+            }
+            
             try {
                 const response = await fetch('/admin/login', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
                     body: JSON.stringify({ email, password })
                 });
-
+                
                 const data = await response.json();
-
+                
                 if (data.successo) {
                     adminToken = data.token;
-                    document.getElementById('loginBox').style.display = 'none';
-                    document.getElementById('dashboard').style.display = 'block';
-                    caricaCodici();
+                    localStorage.setItem('adminToken', adminToken);
+                    showAdminPanel();
+                    showMessage(messageDiv, 'Login effettuato con successo!', 'success');
                 } else {
-                    mostraMessaggio('loginMessage', data.messaggio, 'errore');
+                    showMessage(messageDiv, data.messaggio, 'error');
                 }
             } catch (error) {
-                mostraMessaggio('loginMessage', 'Errore di connessione!', 'errore');
+                showMessage(messageDiv, 'Errore di connessione al server', 'error');
             }
         });
-
-        // Carica codici
-        async function caricaCodici() {
-            try {
-                const response = await fetch('/admin/codici', {
-                    headers: { 'Authorization': adminToken }
-                });
-
-                const data = await response.json();
-
-                if (data.successo) {
-                    // Aggiorna statistiche
-                    document.getElementById('statTotale').textContent = data.statistiche.totale;
-                    document.getElementById('statUsati').textContent = data.statistiche.usati;
-                    document.getElementById('statDisponibili').textContent = data.statistiche.disponibili;
-
-                    // Mostra categorie
-                    const container = document.getElementById('categorieContainer');
-                    container.innerHTML = '';
-
-                    const categorie = ['14x', '12x', '10x', '8x', '6x', '4x', '2x'];
-                    categorie.forEach(cat => {
-                        const codici = data.codici[cat] || [];
-                        if (codici.length > 0) {
-                            container.innerHTML += creaCategoriaHTML(cat, codici);
-                        }
-                    });
-                }
-            } catch (error) {
-                mostraMessaggio('dashboardMessage', 'Errore nel caricamento!', 'errore');
-            }
+        
+        // Logout
+        document.getElementById('logoutBtn').addEventListener('click', function() {
+            localStorage.removeItem('adminToken');
+            adminToken = null;
+            document.getElementById('adminPanel').style.display = 'none';
+            document.getElementById('loginSection').style.display = 'block';
+        });
+        
+        // Mostra pannello admin
+        function showAdminPanel() {
+            document.getElementById('loginSection').style.display = 'none';
+            document.getElementById('adminPanel').style.display = 'block';
+            loadDashboard();
         }
-
-        function creaCategoriaHTML(categoria, codici) {
-            const disponibili = codici.filter(c => !c.usato).length;
-            const usati = codici.filter(c => c.usato).length;
-
-            let html = `
-                <div class="category">
-                    <div class="category-header">
-                        <div>
-                            <span class="category-title">${categoria.toUpperCase()} Boost</span>
-                            <span class="badge badge-${categoria}">${codici.length} codici</span>
-                        </div>
-                        <div>
-                            <span style="color: #28a745; font-weight: bold;">✓ ${disponibili}</span>
-                            <span style="color: #dc3545; font-weight: bold; margin-left: 15px;">✗ ${usati}</span>
-                        </div>
+        
+        // Navigazione tra sezioni
+        document.querySelectorAll('.nav-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const section = this.getAttribute('data-section');
+                
+                // Rimuovi active da tutti i pulsanti
+                document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+                // Aggiungi active al pulsante cliccato
+                this.classList.add('active');
+                
+                // Nascondi tutte le sezioni
+                document.querySelectorAll('.content-section').forEach(s => s.classList.remove('active'));
+                // Mostra la sezione selezionata
+                document.getElementById(section + 'Section').classList.add('active');
+                
+                // Carica dati se necessari
+                switch(section) {
+                    case 'dashboard':
+                        loadDashboard();
+                        break;
+                    case 'gestione':
+                        loadCodici();
+                        break;
+                    case 'statistiche':
+                        loadStatistiche();
+                        break;
+                }
+            });
+        });
+        
+        // Carica dashboard
+        async function loadDashboard() {
+            const statsDiv = document.getElementById('dashboardStats');
+            const messageDiv = document.getElementById('dashboardMessage');
+            
+            try {
+                const response = await fetch('/admin/stats-protette', {
+                    headers: {
+                        'Authorization': adminToken
+                    }
+                });
+                
+                if (response.status === 401) {
+                    localStorage.removeItem('adminToken');
+                    location.reload();
+                    return;
+                }
+                
+                const data = await response.json();
+                
+                statsDiv.innerHTML = `
+                    <div class="stat-card">
+                        <span class="stat-value">${data.totaliCodici}</span>
+                        <span class="stat-label">Codici Totali</span>
                     </div>
-            `;
-
-            codici.forEach(item => {
-                html += `
-                    <div class="code-item ${item.usato ? 'used' : ''}">
-                        <span class="code-text">${item.codice}</span>
-                        <div>
-                            <span class="code-status ${item.usato ? 'status-usato' : 'status-disponibile'}">
-                                ${item.usato ? '✗ Usato' : '✓ Disponibile'}
-                            </span>
-                            <button class="btn-modifica" onclick="modificaCodice('${item.codice}')">✏️ Modifica</button>
-                            <button class="btn-elimina" onclick="eliminaCodice('${item.codice}')">🗑️ Elimina</button>
-                        </div>
+                    <div class="stat-card">
+                        <span class="stat-value">${data.codiciUsati}</span>
+                        <span class="stat-label">Codici Usati</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-value">${data.codiciDisponibili}</span>
+                        <span class="stat-label">Codici Disponibili</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-value">${Math.round((data.codiciDisponibili / data.totaliCodici) * 100)}%</span>
+                        <span class="stat-label">Percentuale Disponibili</span>
                     </div>
                 `;
-            });
-
-            html += `</div>`;
-            return html;
+                
+                showMessage(messageDiv, `Ultimo aggiornamento: ${new Date(data.ultimoAggiornamento).toLocaleString('it-IT')}`, 'success');
+                
+            } catch (error) {
+                showMessage(messageDiv, 'Errore nel caricamento delle statistiche', 'error');
+            }
         }
-
-        function cambiaMetodo(metodo) {
-            metodoAttuale = metodo;
+        
+        // Carica codici
+        async function loadCodici() {
+            const loadingDiv = document.getElementById('loadingCodici');
+            const codiciDiv = document.getElementById('codiciList');
+            const messageDiv = document.getElementById('gestioneMessage');
             
-            // Aggiorna pulsanti
-            document.querySelectorAll('.btn-metodo').forEach(btn => {
-                btn.classList.remove('active');
-            });
-            event.target.classList.add('active');
+            loadingDiv.style.display = 'block';
+            codiciDiv.innerHTML = '';
             
-            // Mostra il metodo selezionato
-            document.getElementById('metodoSingolo').style.display = metodo === 'singolo' ? 'block' : 'none';
-            document.getElementById('metodoFile').style.display = metodo === 'file' ? 'block' : 'none';
-            
-            // Aggiorna titolo
-            document.getElementById('modalTitolo').textContent = metodo === 'singolo' ? 'Aggiungi Codice Singolo' : 'Carica Codici da File';
-        }
-
-        function mostraModalAggiungi() {
-            metodoAttuale = 'singolo';
-            document.getElementById('modalTitolo').textContent = 'Aggiungi Codice Singolo';
-            document.getElementById('modalInputCodice').value = '';
-            document.getElementById('fileCodici').value = '';
-            document.getElementById('textareaCodici').value = '';
-            
-            // Reset UI
-            document.querySelectorAll('.btn-metodo').forEach(btn => {
-                btn.classList.remove('active');
-            });
-            document.querySelector('.btn-metodo').classList.add('active');
-            document.getElementById('metodoSingolo').style.display = 'block';
-            document.getElementById('metodoFile').style.display = 'none';
-            
-            codiceInModifica = null;
-            document.getElementById('modalCodice').style.display = 'block';
-        }
-
-        function modificaCodice(codice) {
-            metodoAttuale = 'singolo';
-            document.getElementById('modalTitolo').textContent = 'Modifica Codice';
-            document.getElementById('modalInputCodice').value = codice;
-            
-            // Mostra solo metodo singolo per modifica
-            document.querySelectorAll('.btn-metodo').forEach(btn => {
-                btn.classList.remove('active');
-            });
-            document.querySelector('.btn-metodo').classList.add('active');
-            document.getElementById('metodoSingolo').style.display = 'block';
-            document.getElementById('metodoFile').style.display = 'none';
-            
-            codiceInModifica = codice;
-            document.getElementById('modalCodice').style.display = 'block';
-        }
-
-        function chiudiModal() {
-            document.getElementById('modalCodice').style.display = 'none';
-        }
-
-        async function salvaCodice() {
             try {
-                if (metodoAttuale === 'singolo') {
-                    // Metodo singolo codice
-                    const nuovoCodice = document.getElementById('modalInputCodice').value.toUpperCase().trim();
+                const response = await fetch('/admin/codici', {
+                    headers: {
+                        'Authorization': adminToken
+                    }
+                });
+                
+                if (response.status === 401) {
+                    localStorage.removeItem('adminToken');
+                    location.reload();
+                    return;
+                }
+                
+                const data = await response.json();
+                
+                if (data.successo) {
+                    let html = '<div class="codici-container">';
                     
-                    if (!nuovoCodice) {
-                        alert('Inserisci un codice!');
-                        return;
+                    for (const [categoria, codici] of Object.entries(data.codici)) {
+                        if (codici.length === 0) continue;
+                        
+                        html += `
+                            <div class="categoria-box">
+                                <div class="categoria-title">
+                                    <h3>${categoria} Boost</h3>
+                                    <span>${codici.length} codici</span>
+                                </div>
+                        `;
+                        
+                        codici.forEach(item => {
+                            html += `
+                                <div class="codice-item ${item.usato ? 'usato' : ''}">
+                                    <span class="codice-text">${item.codice}</span>
+                                    <div class="action-buttons">
+                                        <span class="codice-stato ${item.usato ? 'stato-usato' : 'stato-disponibile'}">
+                                            ${item.usato ? 'USATO' : 'DISPONIBILE'}
+                                        </span>
+                                        <button class="action-btn edit-btn" data-codice="${item.codice}">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                        <button class="action-btn delete-btn" data-codice="${item.codice}">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            `;
+                        });
+                        
+                        html += '</div>';
                     }
                     
-                    let url, body;
-                    if (codiceInModifica) {
-                        url = '/admin/codici/modifica';
-                        body = { vecchioCodice: codiceInModifica, nuovoCodice };
-                    } else {
-                        url = '/admin/codici/aggiungi';
-                        body = { codice: nuovoCodice };
-                    }
+                    html += '</div>';
+                    codiciDiv.innerHTML = html;
                     
-                    const response = await fetch(url, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'Authorization': adminToken
-                        },
-                        body: JSON.stringify(body)
+                    // Aggiungi event listener per i pulsanti
+                    document.querySelectorAll('.edit-btn').forEach(btn => {
+                        btn.addEventListener('click', function() {
+                            const codice = this.getAttribute('data-codice');
+                            const nuovoCodice = prompt('Inserisci il nuovo codice:', codice);
+                            if (nuovoCodice && nuovoCodice !== codice) {
+                                modificaCodice(codice, nuovoCodice);
+                            }
+                        });
                     });
                     
-                    const data = await response.json();
-                    
-                    if (data.successo) {
-                        mostraMessaggio('dashboardMessage', data.messaggio, 'successo');
-                        chiudiModal();
-                        caricaCodici();
-                    } else {
-                        alert(data.messaggio);
-                    }
-                    
-                } else {
-                    // Metodo file/testo
-                    const fileInput = document.getElementById('fileCodici');
-                    const textarea = document.getElementById('textareaCodici').value.trim();
-                    let codici = [];
-                    
-                    if (fileInput.files.length > 0) {
-                        // Leggi file
-                        const file = fileInput.files[0];
-                        const text = await file.text();
-                        codici = text.split('\n')
-                            .map(line => line.trim())
-                            .filter(line => line.length > 0);
-                    } else if (textarea) {
-                        // Leggi textarea
-                        codici = textarea.split('\n')
-                            .map(line => line.trim())
-                            .filter(line => line.length > 0);
-                    } else {
-                        alert('Carica un file o inserisci dei codici nel riquadro di testo!');
-                        return;
-                    }
-                    
-                    if (codici.length === 0) {
-                        alert('Nessun codice valido trovato!');
-                        return;
-                    }
-                    
-                    if (!confirm(`Vuoi aggiungere ${codici.length} codici?`)) {
-                        return;
-                    }
-                    
-                    const response = await fetch('/admin/codici/aggiungi-multi', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'Authorization': adminToken
-                        },
-                        body: JSON.stringify({ codici })
+                    document.querySelectorAll('.delete-btn').forEach(btn => {
+                        btn.addEventListener('click', function() {
+                            const codice = this.getAttribute('data-codice');
+                            if (confirm(`Sei sicuro di voler eliminare il codice: ${codice}?`)) {
+                                eliminaCodice(codice);
+                            }
+                        });
                     });
                     
-                    const data = await response.json();
-                    
-                    if (data.successo) {
-                        mostraMessaggio('dashboardMessage', 
-                            `Aggiunti ${data.aggiunti} codici. Duplicati ignorati: ${data.duplicati}`, 
-                            'successo');
-                        chiudiModal();
-                        caricaCodici();
-                    } else {
-                        alert(data.messaggio);
+                }
+                
+                loadingDiv.style.display = 'none';
+                
+            } catch (error) {
+                loadingDiv.style.display = 'none';
+                showMessage(messageDiv, 'Errore nel caricamento dei codici', 'error');
+            }
+        }
+        
+        // Funzione per mostrare messaggi
+        function showMessage(element, text, type) {
+            element.textContent = text;
+            element.className = `message ${type}`;
+            element.style.display = 'block';
+            
+            // Nascondi il messaggio dopo 5 secondi
+            setTimeout(() => {
+                element.style.display = 'none';
+            }, 5000);
+        }
+        
+        // Aggiungi codice singolo
+        document.getElementById('aggiungiSingoloBtn').addEventListener('click', async function() {
+            const codice = document.getElementById('singoloCodice').value.trim();
+            const messageDiv = document.getElementById('aggiungiMessage');
+            
+            if (!codice) {
+                showMessage(messageDiv, 'Inserisci un codice', 'error');
+                return;
+            }
+            
+            try {
+                const response = await fetch('/admin/codici/aggiungi', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': adminToken,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ codice })
+                });
+                
+                const data = await response.json();
+                showMessage(messageDiv, data.messaggio, data.successo ? 'success' : 'error');
+                
+                if (data.successo) {
+                    document.getElementById('singoloCodice').value = '';
+                    // Ricarica la lista codici se siamo in quella sezione
+                    if (document.getElementById('gestioneSection').classList.contains('active')) {
+                        loadCodici();
                     }
                 }
             } catch (error) {
-                alert('Errore nel salvataggio!');
-                console.error(error);
+                showMessage(messageDiv, 'Errore di connessione', 'error');
+            }
+        });
+        
+        // Aggiungi codici multipli
+        document.getElementById('aggiungiMultipliBtn').addEventListener('click', async function() {
+            const codiciText = document.getElementById('multipliCodici').value.trim();
+            const messageDiv = document.getElementById('aggiungiMessage');
+            
+            if (!codiciText) {
+                showMessage(messageDiv, 'Inserisci dei codici', 'error');
+                return;
+            }
+            
+            const codici = codiciText.split('\n')
+                .map(c => c.trim())
+                .filter(c => c.length > 0);
+            
+            try {
+                const response = await fetch('/admin/codici/aggiungi-multi', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': adminToken,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ codici })
+                });
+                
+                const data = await response.json();
+                if (data.successo) {
+                    let msg = `Aggiunti ${data.dettagli.aggiunti} codici`;
+                    if (data.dettagli.duplicati > 0) msg += `, ${data.dettagli.duplicati} duplicati ignorati`;
+                    if (data.dettagli.invalidi > 0) msg += `, ${data.dettagli.invalidi} codici non validi`;
+                    showMessage(messageDiv, msg, 'success');
+                    
+                    document.getElementById('multipliCodici').value = '';
+                    // Ricarica la lista codici se siamo in quella sezione
+                    if (document.getElementById('gestioneSection').classList.contains('active')) {
+                        loadCodici();
+                    }
+                } else {
+                    showMessage(messageDiv, data.messaggio, 'error');
+                }
+            } catch (error) {
+                showMessage(messageDiv, 'Errore di connessione', 'error');
+            }
+        });
+        
+        // Modifica codice
+        async function modificaCodice(vecchioCodice, nuovoCodice) {
+            const messageDiv = document.getElementById('gestioneMessage');
+            
+            try {
+                const response = await fetch('/admin/codici/modifica', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': adminToken,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ vecchioCodice, nuovoCodice })
+                });
+                
+                const data = await response.json();
+                showMessage(messageDiv, data.messaggio, data.successo ? 'success' : 'error');
+                
+                if (data.successo) {
+                    loadCodici();
+                }
+            } catch (error) {
+                showMessage(messageDiv, 'Errore di connessione', 'error');
             }
         }
-
+        
+        // Elimina codice
         async function eliminaCodice(codice) {
-            if (!confirm(`Vuoi eliminare il codice ${codice}?`)) return;
-
+            const messageDiv = document.getElementById('gestioneMessage');
+            
             try {
                 const response = await fetch('/admin/codici/elimina', {
                     method: 'POST',
                     headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': adminToken
+                        'Authorization': adminToken,
+                        'Content-Type': 'application/json'
                     },
                     body: JSON.stringify({ codice })
                 });
-
-                const data = await response.json();
-
-                if (data.successo) {
-                    mostraMessaggio('dashboardMessage', data.messaggio, 'successo');
-                    caricaCodici();
-                } else {
-                    alert(data.messaggio);
-                }
-            } catch (error) {
-                alert('Errore nell\'eliminazione!');
-            }
-        }
-
-        async function eliminaTuttiCodici() {
-            if (!confirm('⚠️ ATTENZIONE: Vuoi davvero eliminare TUTTI i codici? Questa azione è irreversibile!')) return;
-
-            try {
-                const response = await fetch('/admin/codici/elimina-tutti', {
-                    method: 'POST',
-                    headers: { 'Authorization': adminToken }
-                });
-
-                const data = await response.json();
-
-                if (data.successo) {
-                    mostraMessaggio('dashboardMessage', data.messaggio, 'successo');
-                    caricaCodici();
-                } else {
-                    alert(data.messaggio);
-                }
-            } catch (error) {
-                alert('Errore nell\'eliminazione di tutti i codici!');
-            }
-        }
-
-        async function resetCodici() {
-            if (!confirm('Vuoi resettare tutti i codici usati? Torneranno tutti disponibili!')) return;
-
-            try {
-                const response = await fetch('/admin/reset-codici', {
-                    method: 'POST',
-                    headers: { 'Authorization': adminToken }
-                });
-
-                const data = await response.json();
-
-                if (data.successo) {
-                    mostraMessaggio('dashboardMessage', data.messaggio, 'successo');
-                    caricaCodici();
-                }
-            } catch (error) {
-                alert('Errore nel reset!');
-            }
-        }
-
-        function logout() {
-            adminToken = null;
-            document.getElementById('dashboard').style.display = 'none';
-            document.getElementById('loginBox').style.display = 'block';
-            document.getElementById('email').value = '';
-            document.getElementById('password').value = '';
-        }
-
-        function mostraMessaggio(id, testo, tipo) {
-            const div = document.getElementById(id);
-            div.textContent = testo;
-            div.className = 'messaggio ' + tipo;
-            div.style.display = 'block';
-            setTimeout(() => { div.style.display = 'none'; }, 5000);
-        }
-        async function scaricaBackup() {
-    try {
-        const response = await fetch('/admin/codici/download', {
-            headers: { 'Authorization': adminToken }
-        });
-        
-        if (response.ok) {
-            const blob = await response.blob();
-            const url = window.URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = 'codici-backup.json';
-            document.body.appendChild(a);
-            a.click();
-            window.URL.revokeObjectURL(url);
-            document.body.removeChild(a);
-            
-            mostraMessaggio('dashboardMessage', 'Backup scaricato con successo!', 'successo');
-        } else {
-            mostraMessaggio('dashboardMessage', 'Errore nello scaricamento del backup!', 'errore');
-        }
-    } catch (error) {
-        mostraMessaggio('dashboardMessage', 'Errore di connessione!', 'errore');
-    }
-}
-
-function mostraCaricaBackup() {
-    const inputFile = document.createElement('input');
-    inputFile.type = 'file';
-    inputFile.accept = '.json';
-    
-    inputFile.onchange = async (e) => {
-        const file = e.target.files[0];
-        if (!file) return;
-        
-        const reader = new FileReader();
-        reader.onload = async (event) => {
-            try {
-                const contenuto = event.target.result;
-                // Verifica che sia JSON valido
-                JSON.parse(contenuto);
                 
-                if (!confirm('⚠️ ATTENZIONE: Questo sostituirà TUTTI i codici attuali con quelli dal file. Continuare?')) {
+                const data = await response.json();
+                showMessage(messageDiv, data.messaggio, data.successo ? 'success' : 'error');
+                
+                if (data.successo) {
+                    loadCodici();
+                }
+            } catch (error) {
+                showMessage(messageDiv, 'Errore di connessione', 'error');
+            }
+        }
+        
+        // Carica statistiche
+        async function loadStatistiche() {
+            const loadingDiv = document.getElementById('loadingStats');
+            const contentDiv = document.getElementById('statisticheContent');
+            const messageDiv = document.getElementById('statisticheMessage');
+            
+            loadingDiv.style.display = 'block';
+            contentDiv.innerHTML = '';
+            
+            try {
+                const response = await fetch('/admin/stats-protette', {
+                    headers: {
+                        'Authorization': adminToken
+                    }
+                });
+                
+                if (response.status === 401) {
+                    localStorage.removeItem('adminToken');
+                    location.reload();
                     return;
                 }
                 
+                const data = await response.json();
+                
+                let html = `
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <span class="stat-value">${data.totaliCodici}</span>
+                            <span class="stat-label">Codici Totali</span>
+                        </div>
+                        <div class="stat-card">
+                            <span class="stat-value">${data.codiciUsati}</span>
+                            <span class="stat-label">Codici Usati</span>
+                        </div>
+                        <div class="stat-card">
+                            <span class="stat-value">${data.codiciDisponibili}</span>
+                            <span class="stat-label">Codici Disponibili</span>
+                        </div>
+                        <div class="stat-card">
+                            <span class="stat-value">${Math.round((data.codiciDisponibili / data.totaliCodici) * 100)}%</span>
+                            <span class="stat-label">Percentuale Disponibili</span>
+                        </div>
+                    </div>
+                `;
+                
+                if (data.listaUsati.length > 0) {
+                    html += `
+                        <div style="margin-top: 30px;">
+                            <h3 style="color: #7289da; margin-bottom: 15px;">
+                                <i class="fas fa-history"></i> Codici Usati (${data.listaUsati.length})
+                            </h3>
+                            <div style="background: rgba(0, 0, 0, 0.2); padding: 15px; border-radius: 10px; max-height: 200px; overflow-y: auto;">
+                    `;
+                    
+                    data.listaUsati.forEach(codice => {
+                        html += `<div style="padding: 5px 0; border-bottom: 1px solid rgba(255, 255, 255, 0.1); font-family: monospace;">${codice}</div>`;
+                    });
+                    
+                    html += '</div></div>';
+                }
+                
+                contentDiv.innerHTML = html;
+                loadingDiv.style.display = 'none';
+                
+            } catch (error) {
+                loadingDiv.style.display = 'none';
+                showMessage(messageDiv, 'Errore nel caricamento delle statistiche', 'error');
+            }
+        }
+        
+        // Download backup
+        document.getElementById('downloadBackupBtn').addEventListener('click', async function() {
+            try {
+                const response = await fetch('/admin/codici/download', {
+                    headers: {
+                        'Authorization': adminToken
+                    }
+                });
+                
+                if (response.status === 401) {
+                    localStorage.removeItem('adminToken');
+                    location.reload();
+                    return;
+                }
+                
+                const blob = await response.blob();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `codici-backup-${new Date().toISOString().split('T')[0]}.json`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                window.URL.revokeObjectURL(url);
+                
+                showMessage(document.getElementById('backupMessage'), 'Backup scaricato con successo!', 'success');
+            } catch (error) {
+                showMessage(document.getElementById('backupMessage'), 'Errore nel download del backup', 'error');
+            }
+        });
+        
+        // Carica backup da file
+        document.getElementById('backupFile').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                document.getElementById('backupContent').value = e.target.result;
+            };
+            reader.readAsText(file);
+        });
+        
+        // Carica backup
+        document.getElementById('caricaBackupBtn').addEventListener('click', async function() {
+            const contenuto = document.getElementById('backupContent').value.trim();
+            const messageDiv = document.getElementById('backupMessage');
+            
+            if (!contenuto) {
+                showMessage(messageDiv, 'Inserisci o carica un file JSON', 'error');
+                return;
+            }
+            
+            if (!confirm('ATTENZIONE: Questa operazione sostituirà tutti i codici attuali. Vuoi procedere?')) {
+                return;
+            }
+            
+            try {
                 const response = await fetch('/admin/codici/carica', {
                     method: 'POST',
                     headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': adminToken
+                        'Authorization': adminToken,
+                        'Content-Type': 'application/json'
                     },
-                    body: JSON.stringify({ contenuto: contenuto })
+                    body: JSON.stringify({ contenuto })
                 });
                 
                 const data = await response.json();
+                showMessage(messageDiv, data.messaggio, data.successo ? 'success' : 'error');
                 
                 if (data.successo) {
-                    mostraMessaggio('dashboardMessage', data.messaggio, 'successo');
-                    caricaCodici();
-                } else {
-                    mostraMessaggio('dashboardMessage', data.messaggio, 'errore');
+                    document.getElementById('backupContent').value = '';
+                    document.getElementById('backupFile').value = '';
                 }
             } catch (error) {
-                mostraMessaggio('dashboardMessage', 'File JSON non valido!', 'errore');
+                showMessage(messageDiv, 'Errore nel caricamento del backup', 'error');
             }
-        };
-        reader.readAsText(file);
-    };
-    
-    inputFile.click();
-}
+        });
+        
+        // Reset codici usati
+        document.getElementById('resetCodiciBtn').addEventListener('click', async function() {
+            const conferma = document.getElementById('resetConferma').value;
+            const messageDiv = document.getElementById('operazioniMessage');
+            
+            if (conferma !== 'RESET') {
+                showMessage(messageDiv, 'Scrivi RESET nel campo di conferma', 'error');
+                return;
+            }
+            
+            if (!confirm('Sei sicuro di voler resettare tutti i codici usati?')) {
+                return;
+            }
+            
+            try {
+                const response = await fetch('/admin/reset-codici', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': adminToken,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ conferma })
+                });
+                
+                const data = await response.json();
+                showMessage(messageDiv, data.messaggio, data.successo ? 'success' : 'error');
+                
+                if (data.successo) {
+                    document.getElementById('resetConferma').value = '';
+                }
+            } catch (error) {
+                showMessage(messageDiv, 'Errore nell\'operazione', 'error');
+            }
+        });
+        
+        // Elimina tutti i codici
+        document.getElementById('eliminaTuttiBtn').addEventListener('click', async function() {
+            const conferma = document.getElementById('eliminaConferma').value;
+            const messageDiv = document.getElementById('operazioniMessage');
+            
+            if (conferma !== 'CONFERMA') {
+                showMessage(messageDiv, 'Scrivi CONFERMA nel campo di conferma', 'error');
+                return;
+            }
+            
+            if (!confirm('ATTENZIONE: Stai per eliminare TUTTI i codici. Questa operazione è irreversibile. Vuoi davvero procedere?')) {
+                return;
+            }
+            
+            try {
+                const response = await fetch('/admin/codici/elimina-tutti', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': adminToken,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ conferma })
+                });
+                
+                const data = await response.json();
+                showMessage(messageDiv, data.messaggio, data.successo ? 'success' : 'error');
+                
+                if (data.successo) {
+                    document.getElementById('eliminaConferma').value = '';
+                }
+            } catch (error) {
+                showMessage(messageDiv, 'Errore nell\'operazione', 'error');
+            }
+        });
     </script>
 </body>
 </html>

@@ -3,446 +3,413 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Testa Codice</title>
+    <title>Test Codice - V-BOOST</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-        }
-
-        body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+        }
+        
+        body {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: #fff;
             min-height: 100vh;
             display: flex;
-            justify-content: center;
+            flex-direction: column;
             align-items: center;
             padding: 20px;
         }
-
+        
         .container {
-            background: white;
-            padding: 40px;
-            border-radius: 20px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
             max-width: 500px;
             width: 100%;
-        }
-
-        h1 {
-            text-align: center;
-            color: #333;
-            margin-bottom: 30px;
-            font-size: 28px;
-        }
-
-        .form-group {
+            background: rgba(25, 25, 40, 0.9);
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.1);
             margin-bottom: 20px;
         }
-
+        
+        .logo {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .logo h1 {
+            color: #7289da;
+            font-size: 2.2rem;
+            margin-bottom: 10px;
+        }
+        
+        .logo p {
+            color: #99aab5;
+            font-size: 1rem;
+        }
+        
+        .form-group {
+            margin-bottom: 25px;
+        }
+        
         label {
             display: block;
             margin-bottom: 8px;
-            color: #555;
+            color: #7289da;
             font-weight: 600;
+            font-size: 0.95rem;
         }
-
-        input[type="text"] {
+        
+        input {
             width: 100%;
             padding: 15px;
-            border: 2px solid #ddd;
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid rgba(114, 137, 218, 0.3);
             border-radius: 10px;
-            font-size: 16px;
-            transition: border-color 0.3s;
-            text-transform: uppercase;
-            letter-spacing: 1px;
+            color: #fff;
+            font-size: 1rem;
+            transition: all 0.3s ease;
         }
-
-        input[type="text"]:focus {
+        
+        input:focus {
             outline: none;
-            border-color: #28a745;
+            border-color: #7289da;
+            box-shadow: 0 0 0 3px rgba(114, 137, 218, 0.2);
         }
-
-        button {
+        
+        .btn {
             width: 100%;
-            padding: 15px;
-            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
-            color: white;
+            padding: 16px;
+            background: linear-gradient(135deg, #7289da 0%, #5b6eae 100%);
             border: none;
             border-radius: 10px;
-            font-size: 18px;
+            color: white;
+            font-size: 1.1rem;
             font-weight: 600;
             cursor: pointer;
-            transition: transform 0.2s, box-shadow 0.2s;
-            margin-bottom: 10px;
+            transition: all 0.3s ease;
+            margin-top: 10px;
         }
-
-        button:hover {
+        
+        .btn:hover {
+            background: linear-gradient(135deg, #5b6eae 0%, #7289da 100%);
             transform: translateY(-2px);
-            box-shadow: 0 10px 20px rgba(40, 167, 69, 0.4);
+            box-shadow: 0 5px 15px rgba(114, 137, 218, 0.4);
         }
-
-        .btn-home {
-            background: linear-gradient(135deg, #6c757d 0%, #5a6268 100%);
+        
+        .btn-secondary {
+            background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
         }
-
-        .btn-home:hover {
-            box-shadow: 0 10px 20px rgba(108, 117, 125, 0.4);
+        
+        .btn-secondary:hover {
+            background: linear-gradient(135deg, #38f9d7 0%, #43e97b 100%);
         }
-
-        .btn-test {
-            background: linear-gradient(135deg, #17a2b8 0%, #138496 100%);
-        }
-
-        .btn-test:hover {
-            box-shadow: 0 10px 20px rgba(23, 162, 184, 0.4);
-        }
-
+        
         .result {
-            margin-top: 30px;
+            margin-top: 25px;
             padding: 20px;
             border-radius: 10px;
+            text-align: center;
             display: none;
+            animation: fadeIn 0.5s ease;
         }
-
-        .result.valido {
-            background-color: #d4edda;
-            border: 2px solid #c3e6cb;
+        
+        .success {
+            background: rgba(46, 204, 113, 0.1);
+            border: 2px solid #2ecc71;
+            color: #2ecc71;
         }
-
-        .result.non-valido {
-            background-color: #f8d7da;
-            border: 2px solid #f5c6cb;
+        
+        .error {
+            background: rgba(231, 76, 60, 0.1);
+            border: 2px solid #e74c3c;
+            color: #e74c3c;
         }
-
-        .result h2 {
-            margin-bottom: 15px;
-            font-size: 24px;
+        
+        .warning {
+            background: rgba(241, 196, 15, 0.1);
+            border: 2px solid #f1c40f;
+            color: #f1c40f;
         }
-
-        .result.valido h2 {
-            color: #155724;
+        
+        .info-box {
+            background: rgba(114, 137, 218, 0.1);
+            border: 2px solid rgba(114, 137, 218, 0.3);
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 25px;
         }
-
-        .result.non-valido h2 {
-            color: #721c24;
-        }
-
-        .info-item {
-            padding: 10px;
-            background: white;
+        
+        .info-box h3 {
+            color: #7289da;
             margin-bottom: 10px;
-            border-radius: 5px;
             display: flex;
-            justify-content: space-between;
             align-items: center;
+            gap: 10px;
         }
-
-        .info-label {
-            font-weight: 600;
-            color: #666;
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
-
-        .info-value {
-            font-family: monospace;
-            font-size: 16px;
-            font-weight: bold;
-        }
-
-        .boost-badge {
-            display: inline-block;
-            padding: 5px 15px;
-            border-radius: 20px;
-            font-weight: bold;
-            font-size: 18px;
-            color: white;
-        }
-
-        .boost-2x { background: #6c757d; }
-        .boost-4x { background: #007bff; }
-        .boost-6x { background: #17a2b8; }
-        .boost-8x { background: #28a745; }
-        .boost-10x { background: #ffc107; color: #333; }
-        .boost-12x { background: #fd7e14; }
-        .boost-14x { background: #dc3545; }
-
-        .status-badge {
-            display: inline-block;
-            padding: 5px 10px;
-            border-radius: 15px;
-            font-size: 12px;
-            font-weight: bold;
-            text-transform: uppercase;
-        }
-
-        .status-disponibile {
-            background-color: #28a745;
-            color: white;
-        }
-
-        .status-usato {
-            background-color: #dc3545;
-            color: white;
-        }
-
-        .status-sconosciuto {
-            background-color: #6c757d;
-            color: white;
-        }
-
-        .info {
-            margin-top: 20px;
-            padding: 15px;
-            background-color: #e7f3ff;
-            border-left: 4px solid #2196F3;
-            border-radius: 5px;
-            font-size: 14px;
-            color: #555;
-        }
-
+        
         .loading {
             display: none;
             text-align: center;
             margin: 20px 0;
         }
-
-        .loading-spinner {
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid #28a745;
+        
+        .spinner {
+            border: 4px solid rgba(255, 255, 255, 0.1);
+            border-left-color: #7289da;
             border-radius: 50%;
             width: 40px;
             height: 40px;
             animation: spin 1s linear infinite;
-            margin: 0 auto 10px;
+            margin: 0 auto 15px;
         }
-
+        
         @keyframes spin {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
+        }
+        
+        .nav-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .nav-buttons a {
+            padding: 12px 24px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            color: #7289da;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+        
+        .nav-buttons a:hover {
+            background: rgba(114, 137, 218, 0.1);
+            border-color: #7289da;
+        }
+        
+        .stats-box {
+            background: rgba(155, 89, 182, 0.1);
+            border: 2px solid rgba(155, 89, 182, 0.3);
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 25px;
+            display: none;
+        }
+        
+        .stats-box h3 {
+            color: #9b59b6;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            text-align: center;
+        }
+        
+        .stat-item {
+            padding: 15px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
+        }
+        
+        .stat-value {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #7289da;
+            display: block;
+        }
+        
+        .stat-label {
+            font-size: 0.9rem;
+            color: #99aab5;
+            margin-top: 5px;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>🧪 Testa Codice</h1>
+        <div class="logo">
+            <h1><i class="fas fa-vial"></i> Test Codice</h1>
+            <p>Verifica se un codice è valido senza attivarlo</p>
+        </div>
+        
+        <div class="info-box">
+            <h3><i class="fas fa-info-circle"></i> Come funziona</h3>
+            <p>Questa pagina ti permette di verificare se un codice è valido e disponibile senza attivarlo. Utile per controllare i codici prima dell'uso.</p>
+        </div>
         
         <form id="testForm">
             <div class="form-group">
-                <label for="codice">Inserisci il codice da testare:</label>
-                <input 
-                    type="text" 
-                    id="codice" 
-                    placeholder="2x-XXXX-XXXX-XXXX-XXXX o 14x-XXXX-XXXX-XXXX-XXXX"
-                    maxlength="24"
-                    required
-                >
+                <label for="codice"><i class="fas fa-key"></i> Inserisci il Codice</label>
+                <input type="text" id="codice" name="codice" placeholder="Es: 14x-abcd-1234-efgh" required>
             </div>
             
             <div class="loading" id="loading">
-                <div class="loading-spinner"></div>
+                <div class="spinner"></div>
                 <p>Verifica in corso...</p>
             </div>
             
-            <button type="submit" id="testBtn">🔍 Verifica Codice</button>
+            <button type="submit" class="btn" id="testBtn">
+                <i class="fas fa-search"></i> Test Codice
+            </button>
+            
+            <button type="button" class="btn btn-secondary" id="statsBtn" style="margin-top: 10px;">
+                <i class="fas fa-chart-bar"></i> Mostra Statistiche
+            </button>
         </form>
-
-        <button class="btn-home" onclick="window.location.href='index.html'">
-            ← Torna alla Home
-        </button>
-        <button class="btn-test" onclick="window.location.href='admin.html'" style="margin-top: 10px;">
-            🔧 Pannello Admin
-        </button>
-
-        <div id="result" class="result"></div>
-
-        <div class="info">
-            <strong>ℹ️ Info:</strong><br>
-            Questa pagina serve solo per testare se un codice è valido e se è già stato utilizzato.<br>
-            <strong>ATTENZIONE:</strong> Questa verifica NON attiva il codice e NON lo marca come usato.
+        
+        <div class="result" id="result"></div>
+        
+        <div class="stats-box" id="statsBox">
+            <h3><i class="fas fa-chart-pie"></i> Statistiche Globali</h3>
+            <div class="stats-grid" id="statsGrid">
+                <!-- Le statistiche verranno caricate qui -->
+            </div>
+        </div>
+        
+        <div class="nav-buttons">
+            <a href="/"><i class="fas fa-home"></i> Home</a>
+            <a href="/admin.html"><i class="fas fa-user-shield"></i> Admin</a>
         </div>
     </div>
-
+    
     <script>
-        const form = document.getElementById('testForm');
-        const input = document.getElementById('codice');
-        const resultDiv = document.getElementById('result');
-        const loadingDiv = document.getElementById('loading');
-        const testBtn = document.getElementById('testBtn');
-
-        // Formattazione automatica per TUTTI i tipi (2x, 4x, 6x, 8x, 10x, 12x, 14x)
-        input.addEventListener('input', function(e) {
-            let value = e.target.value.replace(/[^A-Z0-9x-]/gi, '').toUpperCase();
-            
-            // Converti 'x' in 'X' per uniformità
-            value = value.replace(/x/g, 'X');
-            
-            let formattedValue = '';
-            let charCount = 0;
-            
-            for (let i = 0; i < value.length && i < 24; i++) {
-                const char = value[i];
-                formattedValue += char;
-                charCount++;
-                
-                // Aggiungi trattini nelle posizioni corrette
-                if (charCount === 2 || charCount === 7 || charCount === 12 || charCount === 17) {
-                    if (i < value.length - 1 && value[i + 1] !== '-') {
-                        formattedValue += '-';
-                        charCount++;
-                    }
-                }
-            }
-            
-            e.target.value = formattedValue;
-        });
-
-        // Valida il formato del codice per TUTTI i tipi
-        function validaFormatoCodice(codice) {
-            // Pattern per tutti i tipi: 2x, 4x, 6x, 8x, 10x, 12x, 14x
-            const pattern = /^([0-9]+)X-[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}$/i;
-            const match = codice.match(pattern);
-            
-            if (!match) return false;
-            
-            // Estrai il numero prima della X
-            const numero = parseInt(match[1]);
-            // Controlla che sia uno dei tipi supportati
-            const tipiSupportati = [2, 4, 6, 8, 10, 12, 14];
-            return tipiSupportati.includes(numero);
-        }
-
-        form.addEventListener('submit', async (e) => {
+        document.getElementById('testForm').addEventListener('submit', async function(e) {
             e.preventDefault();
             
-            const codice = input.value.trim().toUpperCase();
+            const codice = document.getElementById('codice').value.trim();
+            const btn = document.getElementById('testBtn');
+            const loading = document.getElementById('loading');
+            const resultDiv = document.getElementById('result');
             
-            // Reset risultato precedente
-            resultDiv.style.display = 'none';
-            resultDiv.innerHTML = '';
-            
-            // Verifica formato
-            if (!validaFormatoCodice(codice)) {
-                mostraRisultato(false, 'Formato codice non valido! Usa: [tipo]X-XXXX-XXXX-XXXX-XXXX', null, 
-                    'Tipi supportati: 2x, 4x, 6x, 8x, 10x, 12x, 14x');
+            if (!codice) {
+                resultDiv.className = 'result error';
+                resultDiv.innerHTML = '<h3>❌ Errore</h3><p>Inserisci un codice da testare</p>';
+                resultDiv.style.display = 'block';
                 return;
             }
-
+            
             // Mostra loading
-            loadingDiv.style.display = 'block';
-            testBtn.disabled = true;
+            btn.disabled = true;
+            loading.style.display = 'block';
+            resultDiv.style.display = 'none';
             
             try {
-                // Chiama endpoint di TEST (non attiva il codice)
                 const response = await fetch('/test-codice', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
                     },
-                    body: JSON.stringify({ 
-                        codice: codice
-                    })
+                    body: JSON.stringify({ codice })
                 });
-
-                const data = await response.json();
-
-                // Nascondi loading
-                loadingDiv.style.display = 'none';
-                testBtn.disabled = false;
-
-                if (data.successo) {
-                    mostraRisultato(true, 
-                        data.disponibile ? '✅ Codice valido e DISPONIBILE!' : '⚠️ Codice valido ma GIA\' USATO!', 
-                        {
-                            codice: codice,
-                            tipo: data.tipo || codice.split('-')[0] + ' Boost',
-                            prefisso: codice.split('-')[0].toLowerCase(),
-                            disponibile: data.disponibile,
-                            dataCreazione: data.dataCreazione || 'Sconosciuta',
-                            dataUso: data.dataUso || 'Non utilizzato'
-                        });
-                } else {
-                    mostraRisultato(false, data.messaggio || 'Codice non trovato nel database.');
-                }
-            } catch (error) {
-                // Nascondi loading
-                loadingDiv.style.display = 'none';
-                testBtn.disabled = false;
                 
+                const data = await response.json();
+                
+                // Nascondi loading
+                loading.style.display = 'none';
+                btn.disabled = false;
+                
+                // Mostra risultato
+                let resultClass = 'warning';
+                if (data.successo && data.disponibile) {
+                    resultClass = 'success';
+                } else if (data.successo && !data.disponibile) {
+                    resultClass = 'error';
+                } else {
+                    resultClass = 'error';
+                }
+                
+                resultDiv.className = 'result ' + resultClass;
+                
+                let html = `<h3>${data.successo ? (data.disponibile ? '✅ Codice Valido' : '⚠️ Codice Usato') : '❌ Codice Non Valido'}</h3>`;
+                html += `<p>${data.messaggio}</p>`;
+                if (data.tipo) {
+                    html += `<p><strong>Tipo:</strong> ${data.tipo}</p>`;
+                }
+                if (data.disponibile !== undefined) {
+                    html += `<p><strong>Stato:</strong> ${data.disponibile ? '🟢 Disponibile' : '🔴 Già utilizzato'}</p>`;
+                }
+                
+                resultDiv.innerHTML = html;
+                resultDiv.style.display = 'block';
+                
+            } catch (error) {
                 console.error('Errore:', error);
-                mostraRisultato(false, 'Errore di connessione al server. Riprova più tardi.');
+                loading.style.display = 'none';
+                btn.disabled = false;
+                
+                resultDiv.className = 'result error';
+                resultDiv.innerHTML = `
+                    <h3>❌ Errore di Connessione</h3>
+                    <p>Impossibile connettersi al server. Riprova più tardi.</p>
+                `;
+                resultDiv.style.display = 'block';
             }
         });
-
-        function mostraRisultato(valido, messaggio, info = null, dettagli = '') {
-            resultDiv.className = 'result ' + (valido ? 'valido' : 'non-valido');
+        
+        document.getElementById('statsBtn').addEventListener('click', async function() {
+            const statsBox = document.getElementById('statsBox');
+            const statsGrid = document.getElementById('statsGrid');
             
-            let html = `<h2>${valido ? '🔍' : '❌'} ${messaggio}</h2>`;
-            
-            if (dettagli) {
-                html += `<p style="margin-bottom: 15px; color: #666;">${dettagli}</p>`;
+            if (statsBox.style.display === 'block') {
+                statsBox.style.display = 'none';
+                return;
             }
             
-            if (info) {
-                // Determina lo stato
-                let stato = 'sconosciuto';
-                let statoTesto = 'Sconosciuto';
-                if (info.disponibile !== undefined) {
-                    stato = info.disponibile ? 'disponibile' : 'usato';
-                    statoTesto = info.disponibile ? 'Disponibile' : 'Già utilizzato';
-                }
+            try {
+                const response = await fetch('/admin/stats');
+                const data = await response.json();
                 
-                html += `
-                    <div class="info-item">
-                        <span class="info-label">Codice:</span>
-                        <span class="info-value">${info.codice}</span>
+                statsGrid.innerHTML = `
+                    <div class="stat-item">
+                        <span class="stat-value">${data.totaliCodici}</span>
+                        <span class="stat-label">Codici Totali</span>
                     </div>
-                    <div class="info-item">
-                        <span class="info-label">Tipo Boost:</span>
-                        <span class="boost-badge boost-${info.prefisso}">${info.tipo}</span>
+                    <div class="stat-item">
+                        <span class="stat-value">${data.codiciUsati}</span>
+                        <span class="stat-label">Codici Usati</span>
                     </div>
-                    <div class="info-item">
-                        <span class="info-label">Stato:</span>
-                        <span class="status-badge status-${stato}">${statoTesto}</span>
-                    </div>
-                    <div class="info-item">
-                        <span class="info-label">Formato:</span>
-                        <span class="info-value" style="color: #28a745;">✓ Valido</span>
-                    </div>
-                    <div class="info-item">
-                        <span class="info-label">Data creazione:</span>
-                        <span class="info-value">${info.dataCreazione}</span>
-                    </div>
-                    <div class="info-item">
-                        <span class="info-label">Ultimo utilizzo:</span>
-                        <span class="info-value">${info.dataUso}</span>
+                    <div class="stat-item">
+                        <span class="stat-value">${data.codiciDisponibili}</span>
+                        <span class="stat-label">Disponibili</span>
                     </div>
                 `;
-            } else {
-                html += `
-                    <div class="info-item">
-                        <span class="info-label">Codice inserito:</span>
-                        <span class="info-value">${input.value.trim().toUpperCase() || 'N/A'}</span>
-                    </div>
-                    <div class="info-item">
-                        <span class="info-label">Formato:</span>
-                        <span class="info-value" style="color: #dc3545;">✗ Non valido</span>
-                    </div>
-                `;
+                
+                statsBox.style.display = 'block';
+                
+            } catch (error) {
+                console.error('Errore nel caricamento statistiche:', error);
+                statsGrid.innerHTML = '<p>Errore nel caricamento delle statistiche</p>';
+                statsBox.style.display = 'block';
             }
-            
-            resultDiv.innerHTML = html;
-            resultDiv.style.display = 'block';
-        }
-
-        // Esempio di codice valido per test rapido
-        function testCodiceEsempio() {
-            input.value = '14X-ABCD-1234-EFGH-5678';
-            form.dispatchEvent(new Event('submit'));
-        }
-
-        // Pulsante per test rapido (solo per debug)
-        // console.log("Usa testCodiceEsempio() per testare un codice di esempio");
+        });
+        
+        // Test rapido del server
+        window.addEventListener('load', async () => {
+            try {
+                const response = await fetch('/test-server');
+                const data = await response.json();
+                console.log('Server status:', data);
+            } catch (error) {
+                console.warn('Server non raggiungibile:', error);
+            }
+        });
     </script>
 </body>
 </html>
