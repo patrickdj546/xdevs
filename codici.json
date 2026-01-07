@@ -72,10 +72,21 @@
     "14x-5y6z-7a8b-9c0d"
   ],
   "codiciUsati": [],
-  "ultimoAggiornamento": "2026-01-06T02:44:03.724Z",
+  "ultimoAggiornamento": "2026-01-07T20:51:06.779Z",
   "statistiche": {
     "totali": 70,
     "usati": 0,
     "disponibili": 70
+  },
+  "codiciDettagli": {
+    "2x-9w0x-1y2z-3a4b": {
+      "codice": "2x-9w0x-1y2z-3a4b",
+      "idInvoice": "ded7d15ae20d7-0000009038297",
+      "linkDiscord": "https://discord.gg/xdevswork1",
+      "email": "12@gmail.com",
+      "dataUtilizzo": "2026-01-07T20:50:19.701Z",
+      "boostType": "2x Boost",
+      "ipAddress": "::ffff:127.0.0.1"
+    }
   }
 }

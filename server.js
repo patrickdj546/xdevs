@@ -12,7 +12,7 @@ app.use(express.json());
 app.use(express.static('public'));
 
 // Webhook Discord
-const DISCORD_WEBHOOK = 'https://discord.com/api/webhooks/1457755984393932863/v6oEgqypVcyC-6leg0inPRbSlszPXsNAGNWoeLRNhuk6eAyhLEQKXlQXZWEpNgWycyq4';
+const DISCORD_WEBHOOK = 'https://canary.discord.com/api/webhooks/1457755984393932863/v6oEgqypVcyC-6leg0inPRbSlszPXsNAGNWoeLRNhuk6eAyhLEQKXlQXZWEpNgWycyq4';
 
 // File JSON per il database dei codici
 const CODICI_FILE = 'codici.json';
@@ -34,6 +34,7 @@ function caricaCodiciDalFile() {
             const datiIniziali = {
                 codici: [],
                 codiciUsati: [],
+                codiciDettagli: {},
                 ultimoAggiornamento: new Date().toISOString(),
                 statistiche: {
                     totali: 0,
@@ -49,6 +50,7 @@ function caricaCodiciDalFile() {
         return {
             codici: [],
             codiciUsati: [],
+            codiciDettagli: {},
             ultimoAggiornamento: null,
             statistiche: { totali: 0, usati: 0, disponibili: 0 }
         };
@@ -65,6 +67,11 @@ function salvaCodiciSuFile(dati) {
             usati: dati.codiciUsati.length,
             disponibili: dati.codici.length - dati.codiciUsati.length
         };
+        
+        // Assicurati che codiciDettagli esista
+        if (!dati.codiciDettagli) {
+            dati.codiciDettagli = {};
+        }
         
         fs.writeFileSync(CODICI_FILE, JSON.stringify(dati, null, 2));
         console.log('✅ Codici salvati su file');
@@ -99,10 +106,9 @@ function validaFormatoCodice(codice) {
 
 // Carica dati iniziali
 let database = caricaCodiciDalFile();
-
-// Inizializza array e set con i dati dal file
 let codiciValidi = database.codici;
 let codiciUsati = new Set(database.codiciUsati);
+let codiciDettagli = database.codiciDettagli || {};
 
 // Credenziali admin
 const ADMIN_EMAIL = 'lorisenabbo@gmail.com';
@@ -242,8 +248,20 @@ app.post('/verifica-codice', async (req, res) => {
             // Aggiungi il codice ai codici usati
             codiciUsati.add(codiceNormalized);
             
+            // Salva i dettagli di utilizzo
+            codiciDettagli[codiceNormalized] = {
+                codice: codiceNormalized,
+                idInvoice: idInvoiceTrimmed,
+                linkDiscord: linkDiscordTrimmed,
+                email: emailTrimmed,
+                dataUtilizzo: new Date().toISOString(),
+                boostType: codiceNormalized.split('x')[0] + 'x Boost',
+                ipAddress: req.ip || req.connection.remoteAddress
+            };
+            
             // Aggiorna database
             database.codiciUsati = Array.from(codiciUsati);
+            database.codiciDettagli = codiciDettagli;
             salvaCodiciSuFile(database);
             
             // Invia notifica su Discord
@@ -425,15 +443,25 @@ app.post('/admin/codici/modifica', verificaAdmin, (req, res) => {
         return res.json({ successo: false, messaggio: 'Codice non trovato!' });
     }
 
-    // Se il vecchio codice era usato, aggiorna il set
+    // Se il vecchio codice era usato, aggiorna il set e i dettagli
     if (codiciUsati.has(vecchioNormalized)) {
         codiciUsati.delete(vecchioNormalized);
         codiciUsati.add(nuovoNormalized);
+        
+        // Trasferisci i dettagli al nuovo codice
+        if (codiciDettagli[vecchioNormalized]) {
+            codiciDettagli[nuovoNormalized] = {
+                ...codiciDettagli[vecchioNormalized],
+                codice: nuovoNormalized
+            };
+            delete codiciDettagli[vecchioNormalized];
+        }
     }
 
     codiciValidi[index] = nuovoNormalized;
     database.codici = codiciValidi;
     database.codiciUsati = Array.from(codiciUsati);
+    database.codiciDettagli = codiciDettagli;
     salvaCodiciSuFile(database);
     
     res.json({ 
@@ -460,12 +488,18 @@ app.post('/admin/codici/elimina', verificaAdmin, (req, res) => {
     // Rimuovi dal set se era usato
     codiciUsati.delete(codiceNormalized);
     
+    // Rimuovi i dettagli se esistono
+    if (codiciDettagli[codiceNormalized]) {
+        delete codiciDettagli[codiceNormalized];
+    }
+    
     // Rimuovi dall'array
     codiciValidi.splice(index, 1);
     
     // Aggiorna database
     database.codici = codiciValidi;
     database.codiciUsati = Array.from(codiciUsati);
+    database.codiciDettagli = codiciDettagli;
     salvaCodiciSuFile(database);
     
     res.json({ 
@@ -487,9 +521,11 @@ app.post('/admin/codici/elimina-tutti', verificaAdmin, (req, res) => {
     
     codiciValidi = [];
     codiciUsati.clear();
+    codiciDettagli = {};
     
     database.codici = [];
     database.codiciUsati = [];
+    database.codiciDettagli = {};
     salvaCodiciSuFile(database);
     
     res.json({ 
@@ -544,6 +580,7 @@ app.post('/admin/codici/carica', verificaAdmin, (req, res) => {
         // Sostituisci i codici esistenti
         codiciValidi = [];
         codiciUsati = new Set();
+        codiciDettagli = {};
         
         datiCaricati.codici.forEach(codice => {
             if (typeof codice !== 'string') return;
@@ -568,9 +605,20 @@ app.post('/admin/codici/carica', verificaAdmin, (req, res) => {
             });
         }
 
+        // Carica i dettagli se esistono
+        if (datiCaricati.codiciDettagli && typeof datiCaricati.codiciDettagli === 'object') {
+            Object.keys(datiCaricati.codiciDettagli).forEach(codice => {
+                const codiceNormalized = normalizzaCodice(codice);
+                if (validaFormatoCodice(codiceNormalized) && codiciValidi.includes(codiceNormalized)) {
+                    codiciDettagli[codiceNormalized] = datiCaricati.codiciDettagli[codice];
+                }
+            });
+        }
+
         // Aggiorna database
         database.codici = codiciValidi;
         database.codiciUsati = Array.from(codiciUsati);
+        database.codiciDettagli = codiciDettagli;
         salvaCodiciSuFile(database);
         
         res.json({ 
@@ -581,6 +629,56 @@ app.post('/admin/codici/carica', verificaAdmin, (req, res) => {
         console.error('Errore nel caricamento:', error);
         res.json({ successo: false, messaggio: 'Errore nel caricamento del file!' });
     }
+});
+
+// Route per ottenere i dettagli di un codice
+app.get('/admin/codici/dettagli/:codice', verificaAdmin, (req, res) => {
+    const codice = normalizzaCodice(req.params.codice);
+    
+    if (codiciDettagli[codice]) {
+        res.json({
+            successo: true,
+            dettagli: codiciDettagli[codice]
+        });
+    } else {
+        // Controlla se il codice esiste ma non ha dettagli (non è stato usato)
+        if (codiciValidi.includes(codice)) {
+            res.json({
+                successo: true,
+                dettagli: {
+                    codice: codice,
+                    stato: 'disponibile',
+                    boostType: codice.split('x')[0] + 'x Boost'
+                }
+            });
+        } else {
+            res.json({
+                successo: false,
+                messaggio: 'Codice non trovato'
+            });
+        }
+    }
+});
+
+// Route per ottenere tutti i dettagli dei codici usati
+app.get('/admin/codici/tutti-dettagli', verificaAdmin, (req, res) => {
+    const dettagliArray = [];
+    
+    // Per ogni codice usato, aggiungi i dettagli
+    codiciUsati.forEach(codice => {
+        if (codiciDettagli[codice]) {
+            dettagliArray.push(codiciDettagli[codice]);
+        }
+    });
+    
+    // Ordina per data di utilizzo (più recente prima)
+    dettagliArray.sort((a, b) => new Date(b.dataUtilizzo) - new Date(a.dataUtilizzo));
+    
+    res.json({
+        successo: true,
+        totale: dettagliArray.length,
+        dettagli: dettagliArray
+    });
 });
 
 // Route per vedere le statistiche (pubblica)
@@ -688,5 +786,7 @@ app.listen(PORT, () => {
     console.log(`📊 Dashboard admin: http://localhost:${PORT}/admin.html`);
     console.log(`🧪 Test server: http://localhost:${PORT}/test-server`);
     console.log(`💾 Codici caricati: ${codiciValidi.length}`);
+    console.log(`🎯 Codici usati: ${codiciUsati.size}`);
+    console.log(`📝 Codici con dettagli: ${Object.keys(codiciDettagli).length}`);
     console.log(`⏰ Ultimo aggiornamento: ${database.ultimoAggiornamento || 'Mai'}`);
 });
